@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Físico — Equipo de Fútbol</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f4f6; --card: #ffffff; --card2: #ebebeb;
+    --border: #d4d4d4; --text: #111111; --muted: #777777;
+    --blue: #222222; --green: #22c55e; --yellow: #f59e0b; --red: #ef4444;
+    --green-bg: rgba(34,197,94,.13); --yellow-bg: rgba(245,158,11,.13); --red-bg: rgba(239,68,68,.13);
+  }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  /* HEADER */
+  header { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
+  header .logo { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  header h1 { font-size: 18px; font-weight: 700; line-height: 1.2; }
+  header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  header .badge { margin-left: auto; background: var(--card2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--muted); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; padding: 16px 24px 0; border-bottom: 1px solid var(--border); background: var(--card); }
+  .tab { padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); border: none; background: transparent; transition: all .2s; }
+  .tab:hover { color: var(--text); background: var(--card2); }
+  .tab.active { color: var(--blue); background: var(--bg); border: 1px solid var(--border); border-bottom: 1px solid var(--bg); position: relative; top: 1px; }
+
+  /* CONTENT */
+  .content { padding: 24px; }
+  .pane { display: none; }
+  .pane.active { display: block; }
+
+  /* SUMMARY CARDS */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .card .value { font-size: 28px; font-weight: 800; line-height: 1; }
+  .card .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .card.red .value { color: var(--red); }
+  .card.yellow .value { color: var(--yellow); }
+  .card.blue .value { color: var(--blue); }
+  .card.green .value { color: var(--green); }
+
+  /* FILTERS */
+  .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filters label { font-size: 12px; color: var(--muted); }
+  select, input { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 12px; font-size: 13px; outline: none; }
+  select:focus, input:focus { border-color: var(--blue); }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 900px; }
+  @media (max-width: 700px) { table { min-width: 600px; } }
+  thead th { background: var(--card2); padding: 10px 12px; text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { color: var(--text); }
+  thead th .sort-icon { margin-left: 4px; opacity: .4; }
+  thead th.sorted .sort-icon { opacity: 1; color: var(--blue); }
+  tbody tr { border-top: 1px solid var(--border); transition: background .15s; cursor: pointer; }
+  tbody tr:hover { background: var(--card2); }
+  tbody td { padding: 9px 12px; white-space: nowrap; }
+  .name-cell { font-weight: 600; }
+  .pos-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* ASYMMETRY CHIPS */
+  .chip { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .chip.g { background: var(--green-bg); color: var(--green); }
+  .chip.y { background: var(--yellow-bg); color: var(--yellow); }
+  .chip.r { background: var(--red-bg); color: var(--red); }
+  .chip.n { background: rgba(148,163,184,.1); color: var(--muted); }
+
+  /* MOV SCORE */
+  .mov-bar { display: inline-flex; gap: 2px; align-items: center; }
+  .mov-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mov-dot.g { background: var(--green); }
+  .mov-dot.y { background: var(--yellow); }
+  .mov-dot.r { background: var(--red); }
+  .mov-dot.n { background: var(--border); }
+  .alerts-count { font-weight: 700; font-size: 13px; }
+  .alerts-count.r { color: var(--red); }
+  .alerts-count.y { color: var(--yellow); }
+  .alerts-count.g { color: var(--green); }
+
+  /* INDIVIDUAL VIEW */
+  .player-header { display: flex; align-items: center; gap: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+  .player-avatar { width: 52px; height: 52px; background: linear-gradient(135deg, #333, #666); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .player-info h2 { font-size: 18px; font-weight: 800; }
+  .player-info p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .ind-grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 900px) { .ind-grid { grid-template-columns: 1fr; } }
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .chart-card h3 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+
+  .strength-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .strength-item { background: var(--card2); border-radius: 8px; padding: 10px 12px; }
+  .strength-item .si-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .strength-item .si-bars { display: flex; gap: 8px; align-items: flex-end; height: 50px; }
+  .si-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+  .si-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height .3s; }
+  .si-bar.d { background: #333333; }
+  .si-bar.i { background: #888888; }
+  .si-val { font-size: 10px; color: var(--muted); }
+  .si-asim { font-size: 11px; font-weight: 700; margin-top: 6px; text-align: center; }
+
+  .flex-rot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .fr-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .fr-card h4 { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+  .fr-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .fr-row span { font-size: 12px; color: var(--muted); }
+  .fr-row strong { font-size: 14px; }
+  .fr-asim { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .fr-asim span { font-size: 11px; color: var(--muted); }
+
+  .aslr-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .aslr-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .aslr-chip.g3 { background: var(--green-bg); color: var(--green); }
+  .aslr-chip.y2 { background: var(--yellow-bg); color: var(--yellow); }
+  .aslr-chip.r1 { background: var(--red-bg); color: var(--red); }
+
+  .movilidad-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 16px; }
+  .mov-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; }
+  .mov-item .mi-label { font-size: 10px; color: var(--muted); margin-bottom: 6px; }
+  .mov-item .mi-val { font-size: 20px; font-weight: 800; }
+  .mov-item.g { border-color: var(--green); background: var(--green-bg); }
+  .mov-item.g .mi-val { color: var(--green); }
+  .mov-item.y { border-color: var(--yellow); background: var(--yellow-bg); }
+  .mov-item.y .mi-val { color: var(--yellow); }
+  .mov-item.r { border-color: var(--red); background: var(--red-bg); }
+  .mov-item.r .mi-val { color: var(--red); }
+  .mov-item.n .mi-val { color: var(--muted); }
+
+  /* POSITION VIEW */
+  .pos-controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .pos-controls label { font-size: 12px; color: var(--muted); }
+  .pos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .pos-grid { grid-template-columns: 1fr; } }
+
+  .no-data { color: var(--muted); font-size: 13px; font-style: italic; }
+
+  /* TEST CARDS */
+  .test-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+  .test-header { display: flex; align-items: center; gap: 10px; padding: 11px 16px; background: var(--card2); border-bottom: 1px solid var(--border); }
+  .test-tag { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; padding: 3px 9px; border-radius: 20px; color: #fff; flex-shrink: 0; }
+  .test-header h3 { font-size: 13px; font-weight: 700; margin: 0; color: var(--text); }
+  .test-body { padding: 14px 16px; }
+
+  /* ASLR BIG DISPLAY */
+  .aslr-big { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .aslr-big-item { text-align: center; padding: 18px 12px; border-radius: 10px; border: 1px solid transparent; }
+  .aslr-big-item .ab-side  { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .aslr-big-item .ab-score { font-size: 52px; font-weight: 900; line-height: 1; }
+  .aslr-big-item .ab-max   { font-size: 18px; font-weight: 400; color: var(--muted); }
+  .aslr-big-item .ab-label { font-size: 12px; font-weight: 700; margin-top: 8px; }
+  .aslr-big-item.g  { background: var(--green-bg);  border-color: rgba(34,197,94,.3); }
+  .aslr-big-item.g  .ab-score, .aslr-big-item.g  .ab-label { color: var(--green); }
+  .aslr-big-item.y  { background: var(--yellow-bg); border-color: rgba(245,158,11,.3); }
+  .aslr-big-item.y  .ab-score, .aslr-big-item.y  .ab-label { color: var(--yellow); }
+  .aslr-big-item.r  { background: var(--red-bg);    border-color: rgba(239,68,68,.3); }
+  .aslr-big-item.r  .ab-score, .aslr-big-item.r  .ab-label { color: var(--red); }
+  .aslr-big-item.nd { background: var(--card2);     border-color: var(--border); }
+  .aslr-big-item.nd .ab-score, .aslr-big-item.nd .ab-label { color: var(--muted); }
+
+  /* FD ROW (tobillo) */
+  .fd-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .fd-cell { background: var(--card2); border-radius: 8px; padding: 12px; text-align: center; }
+  .fd-cell .fc-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .fd-cell .fc-value { font-size: 26px; font-weight: 800; line-height: 1; }
+  .fd-cell .fc-unit  { font-size: 12px; color: var(--muted); }
+  .fd-cell .fc-cls   { font-size: 11px; font-weight: 600; margin-top: 4px; }
+  .fd-cell.g .fc-value, .fd-cell.g .fc-cls { color: var(--green); }
+  .fd-cell.y .fc-value, .fd-cell.y .fc-cls { color: var(--yellow); }
+  .fd-cell.r .fc-value, .fd-cell.r .fc-cls { color: var(--red); }
+  .fd-cell.n .fc-value { color: var(--muted); }
+
+  /* HIP ROT 2-col */
+  .hip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* CLASSIFICATION BADGES */
+  .cls-badge { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-left: 4px; }
+  .cls-badge.bueno  { background: var(--green-bg); color: var(--green); }
+  .cls-badge.regular { background: var(--yellow-bg); color: var(--yellow); }
+  .cls-badge.malo   { background: var(--red-bg); color: var(--red); }
+
+  /* OBJECTIVES SECTION */
+  .obj-section { margin-top: 20px; }
+  .obj-section h3 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .obj-group { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .obj-group-title { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .obj-item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-top: 1px solid var(--border); font-size: 13px; line-height: 1.4; }
+  .obj-item:first-of-type { border-top: none; padding-top: 0; }
+  .obj-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .obj-no-items { font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 6px; }
+  .stats-ref { font-size: 10px; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 16px; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ═══════════════════════════════════════════════════
+     MOBILE — max-width: 700px
+  ═══════════════════════════════════════════════════ */
+  @media (max-width: 700px) {
+
+    /* Header compacto */
+    header { padding: 10px 14px; gap: 10px; flex-wrap: wrap; }
+    header .logo { width: 36px; height: 36px; }
+    header .logo svg { width: 36px; height: 43px; }
+    header h1 { font-size: 14px; line-height: 1.2; }
+    header p  { font-size: 10px; }
+    header .badge { font-size: 10px; padding: 3px 8px; }
+
+    /* Tabs: scroll horizontal */
+    .tabs { padding: 10px 10px 0; gap: 2px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab  { padding: 8px 14px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+
+    /* Content */
+    .content { padding: 14px 12px; }
+
+    /* Summary cards: 2 por fila */
+    .cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card .value { font-size: 22px; }
+
+    /* Filters apilados */
+    .filters { flex-direction: column; align-items: flex-start; gap: 8px; }
+    select, input { width: 100%; }
+
+    /* TABLA: scroll horizontal + nombre fijo */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 700px; font-size: 11.5px; }
+    table thead th, table tbody td { padding: 8px 10px; }
+    .name-cell { position: sticky; left: 0; background: var(--card); z-index: 2; min-width: 110px; border-right: 1px solid var(--border); }
+    thead th:first-child { position: sticky; left: 0; background: var(--card2); z-index: 3; }
+
+    /* Player header */
+    .player-header { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+    .player-avatar { width: 42px; height: 42px; font-size: 16px; }
+    .player-info h2 { font-size: 15px; }
+
+    /* avgTag badges: se envuelven debajo del título en mobile */
+    .test-header { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+    .test-header h3 { font-size: 12px; }
+    .test-tag { font-size: 9px; padding: 2px 7px; }
+
+    /* TEST 1 — ASLR: items más compactos */
+    .aslr-big { gap: 8px; }
+    .aslr-big-item { padding: 12px 8px; }
+    .aslr-big-item .ab-score { font-size: 38px; }
+    .aslr-big-item .ab-label { font-size: 11px; }
+
+    /* TEST 2 — Tobillo: 1 columna */
+    .fd-row { grid-template-columns: 1fr; gap: 8px; }
+    .fd-cell .fc-value { font-size: 22px; }
+
+    /* TEST 3 — Cadera: 1 columna */
+    .hip-grid { grid-template-columns: 1fr !important; }
+
+    /* TEST 4 — OHS: 4 cols (wrap a 4 items por fila) */
+    .movilidad-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .mov-item .mi-val { font-size: 16px; }
+    .mov-item .mi-label { font-size: 9px; }
+
+    /* TEST 5 — Fuerza: 1 columna, body diagram toggle */
+    .strength-grid { grid-template-columns: 1fr; }
+    .body-toggle-bar { display: flex !important; }
+
+    /* Objetivos */
+    .obj-item { font-size: 12px; }
+
+    /* Position view */
+    .pos-grid { grid-template-columns: 1fr; }
+    .pos-controls { flex-direction: column; }
+
+    /* Grids generales */
+    .ind-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Body diagram toggle (mobile only) */
+  .body-toggle-bar {
+    display: none;          /* oculto en desktop */
+    gap: 0;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .body-toggle-btn {
+    flex: 1; padding: 8px; font-size: 12px; font-weight: 700;
+    background: var(--card2); border: none; cursor: pointer;
+    color: var(--muted); transition: all .2s;
+  }
+  .body-toggle-btn.active {
+    background: var(--text); color: var(--card);
+  }
+  /* desktop: ambos visibles siempre */
+  .body-panel { display: block; }
+
+  @media (max-width: 700px) {
+    /* mobile: solo el activo */
+    .body-panel { display: none; }
+    .body-panel.active { display: block; }
+  }
+
+  /* Contenedor del diagram: en mobile, los paneles se alternan */
+  @media (max-width: 700px) {
+    .body-diagram-grid { grid-template-columns: 1fr !important; }
+    .body-diagram-grid > div:not(.body-panel.active) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <!-- Ícono evaluaciones físicas -->
+  <div class="logo">
+    <svg viewBox="0 0 48 48" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+      <!-- Clipboard body -->
+      <rect x="8" y="10" width="32" height="34" rx="3" fill="#ffffff" stroke="#222" stroke-width="2"/>
+      <!-- Clip at top -->
+      <rect x="18" y="7" width="12" height="7" rx="2" fill="#ffffff" stroke="#222" stroke-width="2"/>
+      <!-- Header bar on clipboard -->
+      <rect x="8" y="10" width="32" height="8" rx="3" fill="#222"/>
+      <rect x="8" y="15" width="32" height="3" fill="#222"/>
+      <!-- Title line (white on dark) -->
+      <line x1="13" y1="14" x2="35" y2="14" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Chart bars inside clipboard -->
+      <rect x="13" y="32" width="5" height="8"  rx="1" fill="#333"/>
+      <rect x="21" y="27" width="5" height="13" rx="1" fill="#555"/>
+      <rect x="29" y="23" width="5" height="17" rx="1" fill="#222"/>
+      <!-- Trend line over bars -->
+      <polyline points="15,31 23,26 31,22" fill="none" stroke="#111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="15" cy="31" r="1.5" fill="#111"/>
+      <circle cx="23" cy="26" r="1.5" fill="#111"/>
+      <circle cx="31" cy="22" r="1.5" fill="#111"/>
+      <!-- Baseline -->
+      <line x1="11" y1="40" x2="37" y2="40" stroke="#444" stroke-width="1.2"/>
+    </svg>
+  </div>
+  <div>
+    <h1>Dashboard Evaluaciones Equipo</h1>
+    <p>Fuerza · Movilidad · Flexibilidad · Gimnasia y Esgrima Mendoza</p>
+  </div>
+  <div class="badge">31 jugadores</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('equipo')">🏟️ Vista Equipo</button>
+  <button class="tab" onclick="showTab('individual')">👤 Vista Individual</button>
+  <button class="tab" onclick="showTab('posicion')">📊 Por Posición</button>
+</div>
+
+<div class="content">
+
+  <!-- ===== EQUIPO ===== -->
+  <div class="pane active" id="pane-equipo">
+    <div class="cards" id="summary-cards"></div>
+    <div class="filters">
+      <label>Posición:</label>
+      <select id="pos-filter" onchange="renderTable()">
+        <option value="">Todas</option>
+        <option>Arquero</option>
+        <option>Def. Central</option>
+        <option>Def. Lateral</option>
+        <option>Vol. Central</option>
+        <option>Vol. Mixto</option>
+        <option>Delantero</option>
+      </select>
+      <label style="margin-left:8px">Buscar:</label>
+      <input type="text" id="search-input" placeholder="Nombre..." oninput="renderTable()" style="width:160px">
+      <div class="legend" style="margin-left:auto; margin-bottom:0">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> &lt;10%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> 10–15%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> &gt;15%</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="main-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('name')">Jugador <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('pos')">Posición <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('pFD')">FD Asim <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('pRE')">RE Cad. Asim <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('pRI')">RI Cad. Asim <span class="sort-icon">↕</span></th>
+            <th>Movilidad</th>
+            <th onclick="sortTable('pAd')">Aduct. Asim <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('pAb')">Abduct. Asim <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('pQ')">Quad. Asim <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('pIsq')">Isquio. Asim <span class="sort-icon">↕</span></th>
+            <th onclick="sortTable('alerts')">Alertas <span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== INDIVIDUAL ===== -->
+  <div class="pane" id="pane-individual">
+    <div class="filters" style="margin-bottom:20px">
+      <label>Jugador:</label>
+      <select id="player-select" onchange="renderIndividual()">
+        <option value="">Seleccionar...</option>
+      </select>
+    </div>
+    <div id="individual-content"></div>
+  </div>
+
+  <!-- ===== POSICIÓN ===== -->
+  <div class="pane" id="pane-posicion">
+    <div class="pos-controls">
+      <label>Métrica:</label>
+      <select id="pos-metric" onchange="renderPosition()">
+        <option value="pFD">Flexión Dorsal Asimetría %</option>
+        <option value="pRE">RE Cadera Asimetría %</option>
+        <option value="pRI">RI Cadera Asimetría %</option>
+        <option value="pAb">Abductores Asimetría %</option>
+        <option value="pQ">Cuádriceps Asimetría %</option>
+        <option value="pIsq">Isquiotibiales Asimetría %</option>
+        <option value="movScore">Score Movilidad (prom)</option>
+      </select>
+    </div>
+    <div class="pos-grid">
+      <div class="chart-card"><h3>Promedio por posición</h3><canvas id="pos-chart" height="280"></canvas></div>
+      <div class="chart-card"><h3>Radar perfil posicional</h3><canvas id="radar-chart" height="280"></canvas></div>
+    </div>
+    <div class="chart-card" style="margin-top:16px"><h3>Distribución de alertas por posición</h3><canvas id="alert-chart" height="160"></canvas></div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const players = [
+  { name:"César Rigamonti",   pos:"Arquero",      fdD:null, fdI:null, pFD:null,  reD:null, reI:null, pRE:null,  riD:null, riI:null, pRI:null,  aslrD:null, aslrI:null, cerv:null, esc:null, codo:null, lumb:null, cad:null, rod:null, tob:null, adD:null, adI:null, pAd:null,  abD:null,  abI:null,  pAb:null,   quadD:null, quadI:null, pQ:null,   isqD:null, isqI:null, pIsq:null },
+  { name:"Lautaro Petruchi",  pos:"Arquero",      fdD:9.5,  fdI:8.5,  pFD:10.5,  reD:32,   reI:34,   pRE:-5,    riD:45,   riI:42,   pRI:6.6,   aslrD:3,    aslrI:3,    cerv:2,    esc:2,    codo:2,    lumb:3,    cad:1,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:247,   abI:269,   pAb:-8,     quadD:852,  quadI:793,  pQ:6.9,    isqD:734,  isqI:723,  pIsq:1.4  },
+  { name:"Santiago Roggero",  pos:"Arquero",      fdD:13,   fdI:14,   pFD:-7,    reD:23,   reI:25,   pRE:-8,    riD:54,   riI:53,   pRI:1.8,   aslrD:2,    aslrI:2,    cerv:null, esc:null, codo:null, lumb:null, cad:null, rod:null, tob:null, adD:226,  adI:201,  pAd:11.1,  abD:232,   abI:224,   pAb:3.5,    quadD:null, quadI:null, pQ:null,   isqD:383,  isqI:254,  pIsq:33.6 },
+  { name:"Diego Mondino",     pos:"Def. Central", fdD:13,   fdI:11,   pFD:15,    reD:35,   reI:34,   pRE:2.8,   riD:38,   riI:33,   pRI:13.1,  aslrD:3,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:3,    adD:282,  adI:253,  pAd:10.1,  abD:247,   abI:232,   pAb:6.1,    quadD:769,  quadI:755,  pQ:-0.7,   isqD:468,  isqI:282,  pIsq:39.7 },
+  { name:"Ezequiel Muñoz",    pos:"Def. Central", fdD:5.5,  fdI:5,    pFD:9,     reD:25,   reI:22,   pRE:12,    riD:36,   riI:35,   pRI:2.7,   aslrD:2,    aslrI:2,    cerv:null, esc:null, codo:null, lumb:null, cad:null, rod:null, tob:null, adD:null, adI:null, pAd:null,  abD:null,  abI:null,  pAb:null,   quadD:null, quadI:null, pQ:null,   isqD:null, isqI:null, pIsq:null },
+  { name:"Lautaro Carrera",   pos:"Def. Central", fdD:11.5, fdI:15.5, pFD:-26,   reD:35,   reI:30,   pRE:14.2,  riD:34,   riI:35,   pRI:-2.8,  aslrD:3,    aslrI:3,    cerv:3,    esc:2,    codo:3,    lumb:3,    cad:3,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:206,   abI:177,   pAb:14.2,   quadD:732,  quadI:1042, pQ:29.8,   isqD:481,  isqI:592,  pIsq:-18.7},
+  { name:"Matías Recalde",    pos:"Def. Lateral", fdD:9.5,  fdI:8.5,  pFD:10.5,  reD:33,   reI:34,   pRE:-2.9,  riD:48,   riI:33,   pRI:31.2,  aslrD:3,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:3,    cad:3,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:206,   abI:214,   pAb:-4,     quadD:912,  quadI:1049, pQ:-13.1,  isqD:490,  isqI:593,  pIsq:-17.3},
+  { name:"Franco Saavedra",   pos:"Def. Lateral", fdD:8.5,  fdI:9.5,  pFD:-10.5, reD:19,   reI:29,   pRE:-34,   riD:32,   riI:29,   pRI:9.3,   aslrD:2,    aslrI:2,    cerv:2,    esc:1,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:170,   abI:225,   pAb:-24.3,  quadD:675,  quadI:691,  pQ:-2.3,   isqD:522,  isqI:448,  pIsq:14.1 },
+  { name:"Juan Franco",       pos:"Def. Lateral", fdD:10.5, fdI:8.5,  pFD:19,    reD:27,   reI:30,   pRE:10,    riD:39,   riI:34,   pRI:12.8,  aslrD:3,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:224,   abI:251,   pAb:-10.7,  quadD:917,  quadI:1019, pQ:-10,    isqD:560,  isqI:537,  pIsq:4.1  },
+  { name:"Luciano Paredes",   pos:"Def. Lateral", fdD:10.5, fdI:9.5,  pFD:9.5,   reD:33,   reI:38,   pRE:-13.5, riD:26,   riI:25,   pRI:3.8,   aslrD:3,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:2,    cad:1,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:247,   abI:249,   pAb:-0.8,   quadD:1156, quadI:944,  pQ:18.3,   isqD:651,  isqI:582,  pIsq:10.5 },
+  { name:"Fermín Antonini",   pos:"Vol. Central", fdD:12.5, fdI:12,   pFD:4,     reD:33,   reI:32,   pRE:3,     riD:40,   riI:42,   pRI:-4.7,  aslrD:3,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:224,   abI:254,   pAb:-11.6,  quadD:708,  quadI:1005, pQ:-29.6,  isqD:491,  isqI:602,  pIsq:-18.4},
+  { name:"Nahuel Barboza",    pos:"Vol. Central", fdD:11.5, fdI:12.5, pFD:-8,    reD:33,   reI:35,   pRE:-5.7,  riD:45,   riI:48,   pRI:-6.2,  aslrD:3,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:217,   abI:190,   pAb:12.2,   quadD:null, quadI:null, pQ:null,   isqD:null, isqI:null, pIsq:null },
+  { name:"Martín Ubeda",      pos:"Vol. Central", fdD:7,    fdI:6.5,  pFD:7,     reD:28,   reI:27,   pRE:3.5,   riD:45,   riI:42,   pRI:6.6,   aslrD:2,    aslrI:2,    cerv:3,    esc:2,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:2,    adD:210,  adI:185,  pAd:12.1,  abD:224,   abI:200,   pAb:10.7,   quadD:null, quadI:null, pQ:null,   isqD:null, isqI:null, pIsq:null },
+  { name:"Esteban Fernandez", pos:"Vol. Mixto",   fdD:11,   fdI:8,    pFD:27,    reD:27,   reI:36,   pRE:-25,   riD:32,   riI:35,   pRI:-8.5,  aslrD:2,    aslrI:2,    cerv:3,    esc:2,    codo:3,    lumb:2,    cad:1,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:176,   abI:217,   pAb:-18.9,  quadD:null, quadI:null, pQ:null,   isqD:285,  isqI:392,  pIsq:-27.2},
+  { name:"Brian Andrada",     pos:"Vol. Mixto",   fdD:8.5,  fdI:6.5,  pFD:23.5,  reD:32,   reI:37,   pRE:-13.5, riD:52,   riI:38,   pRI:26.9,  aslrD:2,    aslrI:2,    cerv:3,    esc:2,    codo:3,    lumb:3,    cad:1,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:186,   abI:168,   pAb:9.7,    quadD:838,  quadI:809,  pQ:3.5,    isqD:404,  isqI:391,  pIsq:3.2  },
+  { name:"Facundo Lencioni",  pos:"Vol. Mixto",   fdD:9.5,  fdI:10,   pFD:-5,    reD:36,   reI:43,   pRE:-16.2, riD:44,   riI:43,   pRI:2.2,   aslrD:null, aslrI:null, cerv:2,    esc:2,    codo:3,    lumb:3,    cad:3,    rod:2,    tob:2,    adD:null, adI:null, pAd:null,  abD:null,  abI:null,  pAb:null,   quadD:915,  quadI:946,  pQ:-3.3,   isqD:497,  isqI:532,  pIsq:-6.5 },
+  { name:"Nicolás Romano",    pos:"Delantero",    fdD:9.5,  fdI:9.5,  pFD:0,     reD:32,   reI:33,   pRE:-3,    riD:38,   riI:32,   pRI:15.7,  aslrD:3,    aslrI:2,    cerv:3,    esc:2,    codo:3,    lumb:3,    cad:1,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:184,   abI:202,   pAb:-9,     quadD:1154, quadI:962,  pQ:16.6,   isqD:276,  isqI:262,  pIsq:5    },
+  { name:"Luciano Cingolani", pos:"Vol. Mixto",   fdD:10,   fdI:10,   pFD:0,     reD:29,   reI:36,   pRE:-19.4, riD:45,   riI:37,   pRI:17.7,  aslrD:2,    aslrI:2,    cerv:3,    esc:2,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:259,   abI:283,   pAb:-8.5,   quadD:943,  quadI:965,  pQ:-2.2,   isqD:509,  isqI:382,  pIsq:24.9 },
+  { name:"Santiago Rodríguez",pos:"Delantero",    fdD:12.5, fdI:14.5, pFD:-13.7, reD:35,   reI:35,   pRE:0,     riD:21,   riI:25,   pRI:-16,   aslrD:2,    aslrI:2,    cerv:3,    esc:3,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:162,   abI:205,   pAb:-20.9,  quadD:819,  quadI:905,  pQ:-9.6,   isqD:391,  isqI:258,  pIsq:34   },
+  { name:"Nicolás Ferreyra",  pos:"Delantero",    fdD:10,   fdI:7.5,  pFD:25,    reD:28,   reI:29,   pRE:-3.4,  riD:36,   riI:34,   pRI:5.5,   aslrD:2,    aslrI:2,    cerv:3,    esc:3,    codo:3,    lumb:2,    cad:1,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:163,   abI:264,   pAb:-38.4,  quadD:null, quadI:null, pQ:null,   isqD:672,  isqI:513,  pIsq:23   },
+  { name:"Julian Ceballos",   pos:"Vol. Mixto",   fdD:7.5,  fdI:10.5, pFD:28.5,  reD:38,   reI:24,   pRE:36,    riD:27,   riI:36,   pRI:-25,   aslrD:3,    aslrI:3,    cerv:2,    esc:2,    codo:3,    lumb:2,    cad:3,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:189,   abI:204,   pAb:-7.4,   quadD:1091, quadI:889,  pQ:18.5,   isqD:242,  isqI:286,  pIsq:-15  },
+  { name:"Valentín Simoni",   pos:"Delantero",    fdD:11,   fdI:11,   pFD:0,     reD:30,   reI:30,   pRE:0,     riD:45,   riI:42,   pRI:6.6,   aslrD:2,    aslrI:2,    cerv:3,    esc:2,    codo:3,    lumb:2,    cad:2,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:238,   abI:216,   pAb:9.3,    quadD:823,  quadI:737,  pQ:10.4,   isqD:386,  isqI:523,  pIsq:-26  },
+  { name:"Ulises Sánchez",    pos:"Vol. Mixto",   fdD:12,   fdI:9.5,  pFD:20.8,  reD:29,   reI:26,   pRE:10.3,  riD:37,   riI:32,   pRI:13.5,  aslrD:2,    aslrI:2,    cerv:3,    esc:2,    codo:3,    lumb:2,    cad:3,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:184,   abI:223,   pAb:-17.4,  quadD:1101, quadI:1060, pQ:3.7,    isqD:505,  isqI:479,  pIsq:5    },
+  { name:"Blas Armoa",        pos:"Delantero",    fdD:11.5, fdI:8.5,  pFD:26,    reD:35,   reI:36,   pRE:-2.7,  riD:39,   riI:31,   pRI:20.5,  aslrD:3,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:2,    cad:1,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:191,   abI:215,   pAb:-11.4,  quadD:968,  quadI:880,  pQ:9,      isqD:507,  isqI:492,  pIsq:2.9  },
+  { name:"Ignacio Sabatini",  pos:"Delantero",    fdD:11.5, fdI:12.5, pFD:-8,    reD:24,   reI:28,   pRE:-14.2, riD:41,   riI:41,   pRI:0,     aslrD:2,    aslrI:2,    cerv:3,    esc:3,    codo:3,    lumb:2,    cad:2,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:196,   abI:283,   pAb:-30.8,  quadD:650,  quadI:1129, pQ:-42.4,  isqD:346,  isqI:424,  pIsq:-18  },
+  { name:"Agustín Módica",    pos:"Delantero",    fdD:9.5,  fdI:10.5, pFD:-9.5,  reD:26,   reI:28,   pRE:-7.1,  riD:42,   riI:39,   pRI:7.1,   aslrD:2,    aslrI:2,    cerv:2,    esc:2,    codo:3,    lumb:2,    cad:1,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:211,   abI:235,   pAb:-10.4,  quadD:556,  quadI:1208, pQ:-54,    isqD:602,  isqI:624,  pIsq:-3.5 },
+  { name:"Tomás O'Connor",    pos:"Vol. Mixto",   fdD:10.5, fdI:10,   pFD:4.7,   reD:38,   reI:32,   pRE:15.7,  riD:40,   riI:46,   pRI:-13,   aslrD:2,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:2,    adD:null, adI:null, pAd:null,  abD:null,  abI:null,  pAb:null,   quadD:883,  quadI:927,  pQ:-4.7,   isqD:367,  isqI:583,  pIsq:-37  },
+  { name:"Ismael Cortez",     pos:"Def. Lateral", fdD:12.5, fdI:13.5, pFD:-7.4,  reD:30,   reI:30,   pRE:0,     riD:46,   riI:45,   pRI:2.1,   aslrD:3,    aslrI:3,    cerv:3,    esc:3,    codo:3,    lumb:2,    cad:2,    rod:3,    tob:3,    adD:null, adI:null, pAd:null,  abD:172,   abI:150,   pAb:12.5,   quadD:689,  quadI:722,  pQ:-4.5,   isqD:491,  isqI:490,  pIsq:0.2  },
+  { name:"Gerónimo Patriti",  pos:"Def. Central", fdD:11.5, fdI:13.5, pFD:-14.8, reD:26,   reI:27,   pRE:-3.7,  riD:46,   riI:45,   pRI:2.1,   aslrD:3,    aslrI:3,    cerv:2,    esc:2,    codo:3,    lumb:2,    cad:2,    rod:3,    tob:3,    adD:69,   adI:142,  pAd:-51.4, abD:193,   abI:210,   pAb:-7.9,   quadD:771,  quadI:855,  pQ:-9.8,   isqD:446,  isqI:434,  pIsq:2.6  },
+  { name:"Julián Moya",       pos:"Delantero",    fdD:13.5, fdI:10.5, pFD:22.2,  reD:19,   reI:29,   pRE:-34.4, riD:42,   riI:37,   pRI:11.9,  aslrD:3,    aslrI:3,    cerv:3,    esc:2,    codo:3,    lumb:3,    cad:2,    rod:3,    tob:2,    adD:240,  adI:236,  pAd:1.5,   abD:157,   abI:163,   pAb:-3.7,   quadD:921,  quadI:855,  pQ:7.2,    isqD:552,  isqI:553,  pIsq:-0.1 },
+  { name:"David Demartini",   pos:"Vol. Mixto",   fdD:9.5,  fdI:12.5, pFD:-24,   reD:28,   reI:30,   pRE:-6.6,  riD:48,   riI:43,   pRI:10.4,  aslrD:3,    aslrI:3,    cerv:null, esc:null, codo:null, lumb:null, cad:null, rod:null, tob:null, adD:null, adI:null, pAd:null,  abD:208,   abI:225,   pAb:-7.3,   quadD:842,  quadI:956,  pQ:-12,    isqD:306,  isqI:345,  pIsq:-11  },
+];
+
+// ============================================================
+// HELPERS
+// ============================================================
+const POS_COLORS = {
+  "Arquero":      "#111111",
+  "Def. Central": "#3d3d3d",
+  "Def. Lateral": "#666666",
+  "Vol. Central": "#999999",
+  "Vol. Mixto":   "#555555",
+  "Delantero":    "#222222",
+};
+
+function asimClass(v) {
+  if (v === null || v === undefined) return 'n';
+  const a = Math.abs(v);
+  if (a < 10) return 'g';
+  if (a < 15) return 'y';
+  return 'r';
+}
+
+function asimChip(v) {
+  if (v === null || v === undefined) return '<span class="chip n">—</span>';
+  const c = asimClass(v);
+  return `<span class="chip ${c}">${v > 0 ? '+' : ''}${v.toFixed(1)}%</span>`;
+}
+
+function movScore(p) {
+  const vals = [p.cerv, p.esc, p.codo, p.lumb, p.cad, p.rod, p.tob].filter(v => v !== null && v !== undefined);
+  if (!vals.length) return null;
+  return vals.reduce((a,b) => a+b, 0) / vals.length;
+}
+
+function alertCount(p) {
+  const fields = [p.pFD, p.pRE, p.pRI, p.pAd, p.pAb, p.pQ, p.pIsq];
+  return fields.filter(v => v !== null && Math.abs(v) >= 15).length;
+}
+
+function movDots(p) {
+  const fields = [p.cerv, p.esc, p.codo, p.lumb, p.cad, p.rod, p.tob];
+  return fields.map(v => {
+    if (v === null || v === undefined) return '<div class="mov-dot n"></div>';
+    if (v === 3) return '<div class="mov-dot g"></div>';
+    if (v === 2) return '<div class="mov-dot y"></div>';
+    return '<div class="mov-dot r"></div>';
+  }).join('');
+}
+
+function initials(name) {
+  return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+// Enrich players with computed fields
+players.forEach(p => {
+  p.movAvg = movScore(p);
+  p.alerts = alertCount(p);
+});
+
+// ============================================================
+// TAB NAVIGATION
+// ============================================================
+function showTab(id) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'posicion') renderPosition();
+}
+
+// ============================================================
+// SUMMARY CARDS
+// ============================================================
+function renderCards() {
+  const withData = players.filter(p => p.pFD !== null || p.pRE !== null);
+  const highAlert = players.filter(p => p.alerts >= 2).length;
+  const midAlert = players.filter(p => p.alerts === 1).length;
+  const allFields = players.flatMap(p => [p.pFD, p.pRE, p.pRI, p.pAb, p.pQ, p.pIsq].filter(v => v !== null));
+  const highAsim = allFields.filter(v => Math.abs(v) >= 15).length;
+
+  const movAvgs = players.map(p => p.movAvg).filter(v => v !== null);
+  const avgMov = movAvgs.length ? (movAvgs.reduce((a,b)=>a+b,0)/movAvgs.length).toFixed(1) : '—';
+
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="card blue"><div class="label">Jugadores evaluados</div><div class="value">${withData.length}</div><div class="sub">de ${players.length} en plantilla</div></div>
+    <div class="card red"><div class="label">Con 2+ alertas</div><div class="value">${highAlert}</div><div class="sub">asimetría ≥15% en 2+ tests</div></div>
+    <div class="card yellow"><div class="label">Con 1 alerta</div><div class="value">${midAlert}</div><div class="sub">asimetría ≥15% en 1 test</div></div>
+    <div class="card red"><div class="label">Asimetrías críticas</div><div class="value">${highAsim}</div><div class="sub">valores ≥15% en el equipo</div></div>
+    <div class="card green"><div class="label">Score movilidad prom.</div><div class="value">${avgMov}</div><div class="sub">escala 1–3</div></div>
+  `;
+}
+
+// ============================================================
+// TABLE
+// ============================================================
+let sortKey = 'alerts', sortDir = -1;
+
+function sortTable(key) {
+  if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted'));
+  event.currentTarget.classList.add('sorted');
+  renderTable();
+}
+
+function renderTable() {
+  const pos = document.getElementById('pos-filter').value;
+  const q = document.getElementById('search-input').value.toLowerCase();
+  let data = players.filter(p => (!pos || p.pos === pos) && (!q || p.name.toLowerCase().includes(q)));
+  data.sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (sortKey === 'name') return sortDir * a.name.localeCompare(b.name);
+    if (sortKey === 'pos') return sortDir * a.pos.localeCompare(b.pos);
+    if (av === null) av = sortDir > 0 ? Infinity : -Infinity;
+    if (bv === null) bv = sortDir > 0 ? Infinity : -Infinity;
+    // Sort by absolute value for asymmetry fields
+    const asymFields = ['pFD','pRE','pRI','pAd','pAb','pQ','pIsq'];
+    if (asymFields.includes(sortKey)) { av = av === null ? (sortDir>0?Infinity:-Infinity) : Math.abs(a[sortKey]); bv = bv === null ? (sortDir>0?Infinity:-Infinity) : Math.abs(b[sortKey]); }
+    return sortDir * (av - bv);
+  });
+
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = data.map(p => {
+    const ac = p.alerts;
+    const acClass = ac >= 2 ? 'r' : ac === 1 ? 'y' : 'g';
+    const pc = POS_COLORS[p.pos] || '#64748b';
+    return `<tr onclick="goToPlayer('${p.name}')">
+      <td class="name-cell">${p.name}</td>
+      <td><span class="pos-badge" style="background:${pc}22;color:${pc}">${p.pos}</span></td>
+      <td>${asimChip(p.pFD)}</td>
+      <td>${asimChip(p.pRE)}</td>
+      <td>${asimChip(p.pRI)}</td>
+      <td><div class="mov-bar">${movDots(p)}</div>${p.movAvg !== null ? `<span style="font-size:10px;color:var(--muted);margin-left:4px">${p.movAvg.toFixed(1)}</span>` : ''}</td>
+      <td>${asimChip(p.pAd)}</td>
+      <td>${asimChip(p.pAb)}</td>
+      <td>${asimChip(p.pQ)}</td>
+      <td>${asimChip(p.pIsq)}</td>
+      <td><span class="alerts-count ${acClass}">${ac}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function goToPlayer(name) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-individual').classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  document.getElementById('player-select').value = name;
+  renderIndividual();
+}
+
+// ============================================================
+// BODY DIAGRAM — silhouette azul cuadricula
+function renderBodyDiagram(p) {
+  function mc(pct) {
+    if (pct == null) return { bg:'rgba(100,116,139,.15)', bd:'#94a3b8', tx:'#64748b' };
+    const a = Math.abs(pct);
+    if (a < 10)  return { bg:'rgba(34,197,94,.35)',  bd:'#16a34a', tx:'#15803d' };
+    if (a < 15)  return { bg:'rgba(245,158,11,.35)', bd:'#d97706', tx:'#b45309' };
+    return              { bg:'rgba(239,68,68,.35)',  bd:'#dc2626', tx:'#b91c1c' };
+  }
+  const qc  = mc(p.pQ);
+  const ic  = mc(p.pIsq);
+  const adc = mc(p.pAd);
+  const abc = mc(p.pAb);
+  function fN(v) { return v != null ? v + ' N' : '—'; }
+  function fP(v) { return v != null ? (v > 0 ? '+' : '') + v.toFixed(1) + '%' : '—'; }
+  const F = `font-family="'Segoe UI',Arial,sans-serif"`;
+
+  const BODY = "M 149.1,24.0 L 141.3,28.2 L 135.9,36.0 L 135.9,46.8 L 134.1,50.4 L 135.3,52.8 L 137.1,52.2 L 140.1,57.0 L 140.1,70.9 L 137.7,73.3 L 128.7,76.3 L 122.1,80.5 L 111.9,83.5 L 107.1,88.9 L 102.8,99.1 L 101.6,112.9 L 98.6,124.3 L 89.0,143.5 L 83.0,168.8 L 77.0,185.6 L 74.0,189.8 L 56.6,196.4 L 56.6,198.2 L 58.4,198.8 L 65.0,196.4 L 66.8,198.2 L 58.4,215.6 L 60.2,216.8 L 66.8,206.0 L 67.4,207.2 L 63.8,213.2 L 62.0,220.4 L 63.8,220.4 L 70.4,207.8 L 71.0,209.0 L 66.2,220.4 L 68.6,219.8 L 74.6,207.8 L 75.8,208.4 L 74.6,218.0 L 75.8,218.0 L 77.6,209.0 L 82.4,199.4 L 83.6,191.6 L 87.2,182.0 L 102.8,151.3 L 106.5,137.5 L 111.9,126.7 L 116.1,112.3 L 123.3,138.1 L 122.7,169.4 L 119.7,182.0 L 116.1,213.2 L 119.1,243.8 L 124.5,276.9 L 122.1,318.9 L 128.7,362.2 L 128.1,379.0 L 125.7,385.0 L 120.3,389.2 L 120.3,391.0 L 123.9,391.0 L 126.9,392.8 L 135.3,392.8 L 138.3,386.8 L 138.3,373.6 L 135.9,364.6 L 140.7,325.5 L 138.9,297.3 L 142.5,288.3 L 141.9,277.5 L 147.9,231.8 L 147.9,213.2 L 150.3,211.4 L 151.5,212.6 L 152.1,237.2 L 157.5,276.9 L 156.9,287.7 L 161.1,300.3 L 159.3,314.1 L 159.3,330.9 L 163.5,363.4 L 161.1,374.2 L 161.1,386.8 L 162.9,388.6 L 163.5,392.2 L 166.5,393.4 L 179.1,390.4 L 173.7,385.0 L 171.3,379.0 L 170.7,362.8 L 177.3,319.5 L 177.9,308.7 L 175.5,295.5 L 175.5,272.7 L 180.9,240.2 L 183.3,214.4 L 179.7,181.4 L 176.1,166.4 L 177.3,162.1 L 176.1,136.9 L 183.3,112.9 L 187.5,126.7 L 192.9,137.5 L 195.9,150.1 L 208.0,173.0 L 215.8,191.6 L 215.8,196.4 L 221.2,207.2 L 223.6,218.0 L 224.8,218.0 L 223.6,209.0 L 225.4,208.4 L 230.8,219.8 L 233.2,220.4 L 228.4,209.0 L 229.0,207.8 L 235.0,219.8 L 237.4,220.4 L 232.0,206.6 L 234.4,207.8 L 239.2,216.8 L 240.4,216.8 L 240.4,214.4 L 232.6,198.2 L 236.2,197.0 L 241.0,198.8 L 242.8,198.2 L 242.8,196.4 L 225.4,189.8 L 222.4,185.6 L 217.6,173.6 L 210.4,143.5 L 200.8,124.3 L 197.8,112.3 L 196.6,98.5 L 191.7,87.7 L 188.7,84.1 L 177.3,80.5 L 159.9,71.5 L 159.9,55.8 L 165.3,50.4 L 165.3,48.0 L 163.5,46.2 L 163.5,36.0 L 157.5,27.6 Z";
+  const BACK = "M 150.9,24.0 L 158.7,28.2 L 164.1,36.0 L 164.1,46.8 L 165.9,50.4 L 164.7,52.8 L 162.9,52.2 L 159.9,57.0 L 159.9,70.9 L 162.3,73.3 L 171.3,76.3 L 177.9,80.5 L 188.1,83.5 L 192.9,88.9 L 197.2,99.1 L 198.4,112.9 L 201.4,124.3 L 211.0,143.5 L 217.0,168.8 L 223.0,185.6 L 226.0,189.8 L 243.4,196.4 L 243.4,198.2 L 241.6,198.8 L 235.0,196.4 L 233.2,198.2 L 241.6,215.6 L 239.8,216.8 L 233.2,206.0 L 232.6,207.2 L 236.2,213.2 L 238.0,220.4 L 236.2,220.4 L 229.6,207.8 L 229.0,209.0 L 233.8,220.4 L 231.4,219.8 L 225.4,207.8 L 224.2,208.4 L 225.4,218.0 L 224.2,218.0 L 222.4,209.0 L 217.6,199.4 L 216.4,191.6 L 212.8,182.0 L 197.2,151.3 L 193.5,137.5 L 188.1,126.7 L 183.9,112.3 L 176.7,138.1 L 177.3,169.4 L 180.3,182.0 L 183.9,213.2 L 180.9,243.8 L 175.5,276.9 L 177.9,318.9 L 171.3,362.2 L 171.9,379.0 L 174.3,385.0 L 179.7,389.2 L 179.7,391.0 L 176.1,391.0 L 173.1,392.8 L 164.7,392.8 L 161.7,386.8 L 161.7,373.6 L 164.1,364.6 L 159.3,325.5 L 161.1,297.3 L 157.5,288.3 L 158.1,277.5 L 152.1,231.8 L 152.1,213.2 L 149.7,211.4 L 148.5,212.6 L 147.9,237.2 L 142.5,276.9 L 143.1,287.7 L 138.9,300.3 L 140.7,314.1 L 140.7,330.9 L 136.5,363.4 L 138.9,374.2 L 138.9,386.8 L 137.1,388.6 L 136.5,392.2 L 133.5,393.4 L 120.9,390.4 L 126.3,385.0 L 128.7,379.0 L 129.3,362.8 L 122.7,319.5 L 122.1,308.7 L 124.5,295.5 L 124.5,272.7 L 119.1,240.2 L 116.7,214.4 L 120.3,181.4 L 123.9,166.4 L 122.7,162.1 L 123.9,136.9 L 116.7,112.9 L 112.5,126.7 L 107.1,137.5 L 104.1,150.1 L 92.0,173.0 L 84.2,191.6 L 84.2,196.4 L 78.8,207.2 L 76.4,218.0 L 75.2,218.0 L 76.4,209.0 L 74.6,208.4 L 69.2,219.8 L 66.8,220.4 L 71.6,209.0 L 71.0,207.8 L 65.0,219.8 L 62.6,220.4 L 68.0,206.6 L 65.6,207.8 L 60.8,216.8 L 59.6,216.8 L 59.6,214.4 L 67.4,198.2 L 63.8,197.0 L 59.0,198.8 L 57.2,198.2 L 57.2,196.4 L 74.6,189.8 L 77.6,185.6 L 82.4,173.6 L 89.6,143.5 L 99.2,124.3 L 102.2,112.3 L 103.4,98.5 L 108.3,87.7 L 111.3,84.1 L 122.7,80.5 L 140.1,71.5 L 140.1,55.8 L 134.7,50.4 L 134.7,48.0 L 136.5,46.2 L 136.5,36.0 L 142.5,27.6 Z";
+
+  const BG  = '#f4f4f5';   // gris claro
+  const GRD = 'rgba(0,0,0,0.07)'; // líneas grid
+
+  function makeSVG(bodyPath, isBack) {
+    const qOv = isBack ? '' : `
+      <clipPath id="cq${isBack?'b':'f'}"><path d="${bodyPath}"/></clipPath>
+      <rect x="116" y="213" width="34" height="140" fill="${qc.bg}" stroke="${qc.bd}" stroke-width="1" clip-path="url(#cq${isBack?'b':'f'})"/>
+      <rect x="150" y="213" width="34" height="140" fill="${qc.bg}" stroke="${qc.bd}" stroke-width="1" clip-path="url(#cq${isBack?'b':'f'})"/>`;
+    const adOv = isBack ? '' : `
+      <clipPath id="cad"><path d="${bodyPath}"/></clipPath>
+      <rect x="134" y="213" width="16" height="120" fill="${adc.bg}" stroke="${adc.bd}" stroke-width="0.8" stroke-dasharray="3,2" clip-path="url(#cad)"/>
+      <rect x="150" y="213" width="16" height="120" fill="${adc.bg}" stroke="${adc.bd}" stroke-width="0.8" stroke-dasharray="3,2" clip-path="url(#cad)"/>`;
+    const isqOv = !isBack ? '' : `
+      <clipPath id="cis"><path d="${bodyPath}"/></clipPath>
+      <rect x="116" y="213" width="34" height="140" fill="${ic.bg}" stroke="${ic.bd}" stroke-width="1" clip-path="url(#cis)"/>
+      <rect x="150" y="213" width="34" height="140" fill="${ic.bg}" stroke="${ic.bd}" stroke-width="1" clip-path="url(#cis)"/>`;
+    const abOv = !isBack ? '' : `
+      <clipPath id="cab"><path d="${bodyPath}"/></clipPath>
+      <rect x="84" y="180" width="36" height="100" fill="${abc.bg}" stroke="${abc.bd}" stroke-width="1" clip-path="url(#cab)"/>
+      <rect x="180" y="180" width="36" height="100" fill="${abc.bg}" stroke="${abc.bd}" stroke-width="1" clip-path="url(#cab)"/>`;
+
+    const label = isBack ? 'VISTA POSTERIOR' : 'VISTA FRONTAL';
+
+    let callouts = '';
+    if (!isBack) {
+      callouts = `
+      <line x1="184" y1="278" x2="222" y2="278" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3,2"/>
+      <circle cx="184" cy="278" r="3" fill="${qc.bd}"/>
+      <text x="226" y="266" font-size="10" fill="#374151" ${F} font-weight="700">CUÁDRICEPS</text>
+      <text x="226" y="279" font-size="11" fill="#374151" ${F}>D: ${fN(p.quadD)}</text>
+      <text x="226" y="291" font-size="11" fill="#374151" ${F}>I:  ${fN(p.quadI)}</text>
+      <text x="226" y="302" font-size="11" fill="${qc.tx}" ${F} font-weight="700">${fP(p.pQ)}</text>
+      <line x1="116" y1="278" x2="78" y2="278" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3,2"/>
+      <circle cx="116" cy="278" r="3" fill="${adc.bd}"/>
+      <text x="2" y="266" font-size="10" fill="#374151" ${F} font-weight="700">ADUCTORES</text>
+      <text x="2" y="279" font-size="11" fill="#374151" ${F}>D: ${fN(p.adD)}</text>
+      <text x="2" y="291" font-size="11" fill="#374151" ${F}>I:  ${fN(p.adI)}</text>
+      <text x="2" y="302" font-size="11" fill="${adc.tx}" ${F} font-weight="700">${fP(p.pAd)}</text>`;
+    } else {
+      callouts = `
+      <line x1="184" y1="278" x2="222" y2="278" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3,2"/>
+      <circle cx="184" cy="278" r="3" fill="${ic.bd}"/>
+      <text x="226" y="266" font-size="10" fill="#374151" ${F} font-weight="700">ISQUIOTIBIALES</text>
+      <text x="226" y="279" font-size="11" fill="#374151" ${F}>D: ${fN(p.isqD)}</text>
+      <text x="226" y="291" font-size="11" fill="#374151" ${F}>I:  ${fN(p.isqI)}</text>
+      <text x="226" y="302" font-size="11" fill="${ic.tx}" ${F} font-weight="700">${fP(p.pIsq)}</text>
+      <line x1="116" y1="258" x2="78" y2="258" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3,2"/>
+      <circle cx="116" cy="258" r="3" fill="${abc.bd}"/>
+      <text x="2" y="246" font-size="10" fill="#374151" ${F} font-weight="700">ABDUCTORES</text>
+      <text x="2" y="259" font-size="11" fill="#374151" ${F}>D: ${fN(p.abD)}</text>
+      <text x="2" y="271" font-size="11" fill="#374151" ${F}>I:  ${fN(p.abI)}</text>
+      <text x="2" y="282" font-size="11" fill="${abc.tx}" ${F} font-weight="700">${fP(p.pAb)}</text>`;
+    }
+
+    return `<svg viewBox="0 0 300 418" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+  <rect width="300" height="418" fill="${BG}" rx="8"/>
+  <path d="M0,20L300,20M0,40L300,40M0,60L300,60M0,80L300,80M0,100L300,100M0,120L300,120M0,140L300,140M0,160L300,160M0,180L300,180M0,200L300,200M0,220L300,220M0,240L300,240M0,260L300,260M0,280L300,280M0,300L300,300M0,320L300,320M0,340L300,340M0,360L300,360M0,380L300,380M0,400L300,400" stroke="${GRD}" stroke-width="0.5"/>
+  <path d="M20,0L20,418M40,0L40,418M60,0L60,418M80,0L80,418M100,0L100,418M120,0L120,418M140,0L140,418M160,0L160,418M180,0L180,418M200,0L200,418M220,0L220,418M240,0L240,418M260,0L260,418M280,0L280,418" stroke="${GRD}" stroke-width="0.5"/>
+  <path d="${bodyPath}" fill="#64748b" stroke="#475569" stroke-width="0.5"/>
+  ${qOv}${adOv}${isqOv}${abOv}
+  <text x="150" y="14" text-anchor="middle" font-size="10" fill="#6b7280" ${F} font-weight="700" letter-spacing="2">${label}</text>
+  ${callouts}
+</svg>`;
+  }
+
+  const front = makeSVG(BODY, false);
+  const back  = makeSVG(BACK, true);
+
+  return `
+  <div class="body-toggle-bar">
+    <button class="body-toggle-btn active" onclick="toggleBody('front',this)">Vista Frontal</button>
+    <button class="body-toggle-btn"        onclick="toggleBody('back',this)">Vista Posterior</button>
+  </div>
+  <div class="body-diagram-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+    <div class="body-panel active" style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:10px;padding:4px">${front}</div>
+    <div class="body-panel"        style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:10px;padding:4px">${back}</div>
+  </div>`;
+}
+
+// ============================================================
+// INDIVIDUAL
+// ============================================================
+let radarChart = null, strengthChart = null;
+
+function renderIndividual() {
+  const sel = document.getElementById('player-select').value;
+  const cont = document.getElementById('individual-content');
+  if (!sel) { cont.innerHTML = '<p class="no-data">Seleccioná un jugador del menú de arriba o hacé clic en uno de la tabla de equipo.</p>'; return; }
+  const p = players.find(pl => pl.name === sel);
+  if (!p) return;
+
+  const pc = POS_COLORS[p.pos] || '#64748b';
+  const mov = [p.cerv, p.esc, p.codo, p.lumb, p.cad, p.rod, p.tob];
+  const movLabels = ['Cervical','Esc.','Codo','Lumbar','Cadera','Rodilla','Tobillo'];
+
+  // ASLR
+  function aslrChip(v, side) {
+    if (v === null) return `<span class="aslr-chip" style="background:var(--card2);color:var(--muted)">${side}: —</span>`;
+    const cls = v === 3 ? 'g3' : v === 2 ? 'y2' : 'r1';
+    const sym = v === 3 ? '✓' : v === 2 ? '!' : '✗';
+    return `<span class="aslr-chip ${cls}">${sym} ASLR ${side}: ${v}</span>`;
+  }
+
+  // Mobility items
+  const movItemsHtml = mov.map((v, i) => {
+    const cls = v === null ? 'n' : v === 3 ? 'g' : v === 2 ? 'y' : 'r';
+    return `<div class="mov-item ${cls}"><div class="mi-label">${movLabels[i]}</div><div class="mi-val">${v !== null ? v : '—'}</div></div>`;
+  }).join('');
+
+  // ── Team average helper ──────────────────────────────────────
+  function tAvg(metric) {
+    if (metric === 'movAvg') {
+      const vals = players.filter(pl => pl.movAvg != null).map(pl => pl.movAvg);
+      return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    }
+    const vals = players.filter(pl => pl[metric] != null).map(pl => +pl[metric]);
+    if (!vals.length) return null;
+    return STRENGTH_METRICS.includes(metric) ? robustMean(vals) : vals.reduce((a,b)=>a+b,0)/vals.length;
+  }
+
+  // "Promedio grupal" badge (inline, visible)
+  function avgTag(label, val, unit='', dec=1) {
+    if (val == null) return '';
+    return `<span style="font-size:11px;color:#374151;background:#e5e7eb;border:1px solid #d1d5db;border-radius:6px;padding:3px 10px;white-space:nowrap;font-weight:600">
+      Promedio grupal${label ? ' '+label : ''}: <span style="font-weight:800">${val.toFixed(dec)}${unit}</span>
+    </span>`;
+  }
+
+  // Strength bars helper (now with team avg reference)
+  function strengthBlock(label, vD, vI, pct, avgD, avgI) {
+    if (vD === null && vI === null) return `
+      <div class="strength-item">
+        <div class="si-label" style="font-size:12px;font-weight:700;color:var(--text)">${label}</div>
+        <p class="no-data" style="font-size:11px;margin-top:6px">Sin dato registrado</p>
+      </div>`;
+    const mx = Math.max(vD||0, vI||0, avgD||0, avgI||0, 1);
+    const hD = Math.round(((vD||0)/mx)*46);
+    const hI = Math.round(((vI||0)/mx)*46);
+    const hAD = avgD != null ? Math.round((avgD/mx)*46) : null;
+    const hAI = avgI != null ? Math.round((avgI/mx)*46) : null;
+    const cPct = asimClass(pct);
+    const pctColor = cPct==='g'?'var(--green)':cPct==='y'?'var(--yellow)':'var(--red)';
+    return `<div class="strength-item">
+      <div class="si-label" style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">${label}</div>
+      <div class="si-bars">
+        <div class="si-bar-wrap" style="position:relative">
+          <div class="si-bar d" style="height:${hD}px;position:relative">
+            ${hAD!=null?`<div style="position:absolute;bottom:${hAD}px;left:-2px;right:-2px;border-top:2px dashed rgba(0,0,0,.35)" title="Promedio equipo: ${Math.round(avgD)} N"></div>`:''}
+          </div>
+          <div class="si-val" style="font-size:11px;font-weight:700">${vD != null ? vD : '—'}<span style="font-size:9px;font-weight:400"> N</span></div>
+          <div style="font-size:10px;color:var(--muted);font-weight:600">Derecha</div>
+          ${avgD!=null?`<div style="font-size:9px;color:var(--muted);font-weight:600">P.G: ${Math.round(avgD)} N</div>`:''}
+        </div>
+        <div class="si-bar-wrap" style="position:relative">
+          <div class="si-bar i" style="height:${hI}px;position:relative">
+            ${hAI!=null?`<div style="position:absolute;bottom:${hAI}px;left:-2px;right:-2px;border-top:2px dashed rgba(0,0,0,.35)" title="Promedio equipo: ${Math.round(avgI)} N"></div>`:''}
+          </div>
+          <div class="si-val" style="font-size:11px;font-weight:700">${vI != null ? vI : '—'}<span style="font-size:9px;font-weight:400"> N</span></div>
+          <div style="font-size:10px;color:var(--muted);font-weight:600">Izquierda</div>
+          ${avgI!=null?`<div style="font-size:9px;color:var(--muted);font-weight:600">P.G: ${Math.round(avgI)} N</div>`:''}
+        </div>
+      </div>
+      <div class="si-asim" style="color:${pctColor};margin-top:6px">${pct !== null ? (pct>0?'+':'')+pct.toFixed(1)+'% asimetría' : '—'}</div>
+    </div>`;
+  }
+
+  // --- helpers for new layout ---
+  function aslrBigItem(val, side) {
+    if (val === null || val === undefined) return `
+      <div class="aslr-big-item nd">
+        <div class="ab-side">${side}</div>
+        <div class="ab-score">—</div>
+        <div class="ab-label">Sin dato</div>
+      </div>`;
+    const cls   = val === 3 ? 'g' : val === 2 ? 'y' : 'r';
+    const label = val === 3 ? '✓ Óptimo' : val === 2 ? '! Estimular flexibilidad' : '✗ Mejorar flexibilidad';
+    return `
+      <div class="aslr-big-item ${cls}">
+        <div class="ab-side">${side}</div>
+        <div class="ab-score">${val}<span class="ab-max">/3</span></div>
+        <div class="ab-label">${label}</div>
+      </div>`;
+  }
+
+  function fdCell(val, label) {
+    if (val === null || val === undefined) return `
+      <div class="fd-cell n">
+        <div class="fc-label">${label}</div>
+        <div class="fc-value">—</div>
+        <div class="fc-cls">Sin dato</div>
+      </div>`;
+    const cls = val > 10 ? 'g' : val >= 8 ? 'y' : 'r';
+    const txt = val > 10 ? 'Óptimo' : val >= 8 ? 'Estimular' : 'Mejorar';
+    return `
+      <div class="fd-cell ${cls}">
+        <div class="fc-label">${label}</div>
+        <div class="fc-value">${val}<span class="fc-unit"> cm</span></div>
+        <div class="fc-cls">${txt}</div>
+      </div>`;
+  }
+
+  function hipCard(title, vD, vI, pct, p33, p66, refMean) {
+    return `
+      <div class="fr-card">
+        <h4>${title}</h4>
+        <div class="fr-row"><span>Derecha</span><div><strong>${vD ?? '—'}°</strong>${clsBadge(classifyRot(vD, p33, p66))}</div></div>
+        <div class="fr-row"><span>Izquierda</span><div><strong>${vI ?? '—'}°</strong>${clsBadge(classifyRot(vI, p33, p66))}</div></div>
+        <div class="fr-asim"><span>Asimetría</span>${asimChip(pct)}</div>
+        <div class="stats-ref">Ref. equipo — P33: ${p33.toFixed(1)}° | P66: ${p66.toFixed(1)}° | Media: ${refMean.toFixed(1)}°</div>
+      </div>`;
+  }
+
+  const TAG_COLORS = ['#1f2937','#374151','#4b5563','#6b7280','#111827'];
+
+  cont.innerHTML = `
+    <!-- HEADER -->
+    <div class="player-header">
+      <div class="player-avatar" style="background:linear-gradient(135deg,${pc},${pc}88)">${initials(p.name)}</div>
+      <div class="player-info">
+        <h2>${p.name}</h2>
+        <p><span class="pos-badge" style="background:${pc}22;color:${pc}">${p.pos}</span></p>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-size:11px;color:var(--muted)">Alertas críticas</div>
+        <div style="font-size:24px;font-weight:800;color:${p.alerts>=2?'var(--red)':p.alerts===1?'var(--yellow)':'var(--green)'}">${p.alerts} <span style="font-size:13px;color:var(--muted)">${p.alerts===1?'alerta':'alertas'}</span></div>
+      </div>
+    </div>
+
+    <!-- TEST 1: ASLR -->
+    <div class="test-card">
+      <div class="test-header">
+        <span class="test-tag" style="background:${TAG_COLORS[0]}">Test 1</span>
+        <h3>ASLR — Elevación de Pierna Recta Activa</h3>
+        <span style="margin-left:auto;display:flex;gap:6px">${avgTag('D', tAvg('aslrD'), '/3')} ${avgTag('I', tAvg('aslrI'), '/3')}</span>
+      </div>
+      <div class="test-body">
+        <div class="aslr-big">
+          ${aslrBigItem(p.aslrD, 'Pierna Derecha')}
+          ${aslrBigItem(p.aslrI, 'Pierna Izquierda')}
+        </div>
+      </div>
+    </div>
+
+    <!-- TEST 2: FLEXIÓN DORSAL -->
+    <div class="test-card">
+      <div class="test-header">
+        <span class="test-tag" style="background:${TAG_COLORS[1]}">Test 2</span>
+        <h3>Flexión Dorsal de Tobillo</h3>
+        <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          ${avgTag('D', tAvg('fdD'), ' cm')} ${avgTag('I', tAvg('fdI'), ' cm')}
+        </span>
+      </div>
+      <div class="test-body">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Óptimo &gt;10 cm · Estimular 8–10 cm · Mejorar &lt;8 cm</div>
+        <div class="fd-row">
+          ${fdCell(p.fdD, 'Derecha')}
+          ${fdCell(p.fdI, 'Izquierda')}
+          <div class="fd-cell" style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div class="fc-label">Asimetría</div>
+            <div style="margin-top:10px">${asimChip(p.pFD)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEST 3: MOVILIDAD DE CADERA -->
+    <div class="test-card">
+      <div class="test-header">
+        <span class="test-tag" style="background:${TAG_COLORS[2]}">Test 3</span>
+        <h3>Movilidad de Cadera — Rotación Interna y Externa</h3>
+        <span style="margin-left:auto;display:flex;gap:6px">
+          ${avgTag('RE', teamStats.reMean, '°')} ${avgTag('RI', teamStats.riMean, '°')}
+        </span>
+      </div>
+      <div class="test-body">
+        <div class="hip-grid">
+          ${hipCard('Rotación Externa (RE)', p.reD, p.reI, p.pRE, teamStats.reP33, teamStats.reP66, teamStats.reMean)}
+          ${hipCard('Rotación Interna (RI)', p.riD, p.riI, p.pRI, teamStats.riP33, teamStats.riP66, teamStats.riMean)}
+        </div>
+      </div>
+    </div>
+
+    <!-- TEST 4: SENTADILLA DE ARRANQUE -->
+    <div class="test-card">
+      <div class="test-header">
+        <span class="test-tag" style="background:${TAG_COLORS[3]}">Test 4</span>
+        <h3>Sentadilla de Arranque — Overhead Squat</h3>
+        <span style="margin-left:auto">${avgTag('', tAvg('movAvg'), '/3')}</span>
+      </div>
+      <div class="test-body">
+        <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted)">
+          <span>Score jugador: <strong style="color:${p.movAvg>=2.5?'var(--green)':p.movAvg>=1.5?'var(--yellow)':'var(--red)'};font-size:15px">${p.movAvg !== null ? p.movAvg.toFixed(1) : '—'}<span style="font-size:11px">/3</span></strong></span>
+          <span style="color:var(--border)">|</span>
+          <span>3 = Óptimo · 2 = Estimular · 1 = Mejorar</span>
+        </div>
+        <div class="movilidad-grid">${movItemsHtml}</div>
+      </div>
+    </div>
+
+    <!-- TEST 5: FUERZA MUSCULAR -->
+    <div class="test-card">
+      <div class="test-header">
+        <span class="test-tag" style="background:${TAG_COLORS[4]}">Test 5</span>
+        <h3>Fuerza Muscular</h3>
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">Newtons (N) · – – promedio equipo</span>
+      </div>
+      <div class="test-body">
+        ${renderBodyDiagram(p)}
+        <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">Detalle por músculo — valores individuales vs. promedio grupal</div>
+        <div class="strength-grid">
+          ${strengthBlock('Aductores',     p.adD,   p.adI,   p.pAd,  tAvg('adD'),   tAvg('adI'))}
+          ${strengthBlock('Abductores',    p.abD,   p.abI,   p.pAb,  tAvg('abD'),   tAvg('abI'))}
+          ${strengthBlock('Cuádriceps',    p.quadD, p.quadI, p.pQ,   tAvg('quadD'), tAvg('quadI'))}
+          ${strengthBlock('Isquiotibiales',p.isqD,  p.isqI,  p.pIsq, tAvg('isqD'),  tAvg('isqI'))}
+        </div>
+      </div>
+    </div>
+
+    <!-- OBJETIVOS -->
+    ${renderObjectives(p)}
+  `;
+}
+
+// ============================================================
+// POSITION VIEW
+// ============================================================
+let posChart = null, posRadar = null, alertChart = null;
+
+function renderPosition() {
+  const metric = document.getElementById('pos-metric').value;
+  const positions = ["Arquero","Def. Central","Def. Lateral","Vol. Central","Vol. Mixto","Delantero"];
+  const colors = positions.map(p => POS_COLORS[p]);
+
+  // Avg per position for selected metric (robust mean for strength metrics)
+  const isStrength = STRENGTH_METRICS.includes(metric);
+  const avgsInfo = positions.map(pos => {
+    const vals = players.filter(p => p.pos === pos && p[metric] !== null && p[metric] !== undefined)
+                        .map(p => metric === 'movScore' ? p.movAvg : Math.abs(p[metric]));
+    if (!vals.length) return { mean: null, excluded: 0 };
+    if (isStrength) {
+      const info = robustMeanInfo(vals);
+      return info;
+    }
+    return { mean: vals.reduce((a,b)=>a+b,0)/vals.length, excluded: 0 };
+  });
+  const avgs = avgsInfo.map(i => i.mean);
+
+  if (posChart) posChart.destroy();
+  posChart = new Chart(document.getElementById('pos-chart'), {
+    type: 'bar',
+    data: {
+      labels: positions,
+      datasets: [{
+        label: document.getElementById('pos-metric').selectedOptions[0].text,
+        data: avgs,
+        backgroundColor: colors.map(c => c + '88'),
+        borderColor: colors,
+        borderWidth: 2,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: (ctx) => {
+              const info = avgsInfo[ctx.dataIndex];
+              if (info && info.excluded > 0)
+                return `⚠ ${info.excluded} outlier${info.excluded>1?'s':''} excluido${info.excluded>1?'s':''} (±2 SD)`;
+              return '';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#666666', font: { size: 11 } }, grid: { color: '#e5e5e5' } },
+        y: { ticks: { color: '#666666' }, grid: { color: '#e5e5e5' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Radar: per-position profile using 4 main asymmetry metrics (robust avg for strength)
+  const radarMetrics = ['pFD','pRE','pRI','pAb'];
+  const radarLabels = ['FD Asim','RE Cad','RI Cad','Abduct.'];
+  const radarDatasets = positions.map((pos, i) => {
+    const data = radarMetrics.map(m => {
+      const vals = players.filter(p => p.pos === pos && p[m] !== null).map(p => Math.abs(p[m]));
+      if (!vals.length) return 0;
+      return STRENGTH_METRICS.includes(m) ? (robustMean(vals) ?? 0) : vals.reduce((a,b)=>a+b,0)/vals.length;
+    });
+    return { label: pos, data, backgroundColor: colors[i]+'33', borderColor: colors[i], borderWidth: 2, pointRadius: 3 };
+  });
+
+  if (posRadar) posRadar.destroy();
+  posRadar = new Chart(document.getElementById('radar-chart'), {
+    type: 'radar',
+    data: { labels: radarLabels, datasets: radarDatasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#555555', font: { size: 10 }, boxWidth: 12 }, position: 'bottom' } },
+      scales: { r: { ticks: { color: '#888888', backdropColor: 'transparent', font:{size:10} }, grid: { color: '#e0e0e0' }, angleLines: { color: '#d0d0d0' }, pointLabels: { color: '#333333', font:{size:11} }, suggestedMin:0 } }
+    }
+  });
+
+  // Alert distribution stacked bar
+  const alertData = positions.map(pos => {
+    const ps = players.filter(p => p.pos === pos);
+    return {
+      ok: ps.filter(p => p.alerts === 0).length,
+      one: ps.filter(p => p.alerts === 1).length,
+      two: ps.filter(p => p.alerts >= 2).length,
+    };
+  });
+
+  if (alertChart) alertChart.destroy();
+  alertChart = new Chart(document.getElementById('alert-chart'), {
+    type: 'bar',
+    data: {
+      labels: positions,
+      datasets: [
+        { label: 'Sin alertas', data: alertData.map(d=>d.ok), backgroundColor: 'rgba(34,197,94,.4)', borderColor:'rgba(34,197,94,1)', borderWidth:1, borderRadius:4, stack:'s' },
+        { label: '1 alerta', data: alertData.map(d=>d.one), backgroundColor: 'rgba(245,158,11,.4)', borderColor:'rgba(245,158,11,1)', borderWidth:1, stack:'s' },
+        { label: '2+ alertas', data: alertData.map(d=>d.two), backgroundColor: 'rgba(239,68,68,.4)', borderColor:'rgba(239,68,68,1)', borderWidth:1, stack:'s' },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#555555', font:{size:11}, boxWidth:12 }, position: 'bottom' } },
+      scales: {
+        x: { stacked: true, ticks: { color: '#666666', font:{size:11} }, grid: { color: '#e5e5e5' } },
+        y: { stacked: true, ticks: { color: '#666666', stepSize:1 }, grid: { color: '#e5e5e5' } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// ROBUST MEAN (excludes outliers beyond ±2 SD)
+// Applied to all strength/force metrics
+// ============================================================
+const STRENGTH_METRICS = ['pAd','pAb','pQ','pIsq','adD','adI','abD','abI','quadD','quadI','isqD','isqI'];
+
+function robustMean(values, threshold = 2) {
+  if (!values.length) return null;
+  if (values.length <= 2) return values.reduce((a,b)=>a+b,0) / values.length;
+
+  const m  = values.reduce((a,b)=>a+b,0) / values.length;
+  const sd = Math.sqrt(values.map(v=>(v-m)**2).reduce((a,b)=>a+b,0) / values.length);
+
+  if (sd === 0) return m;
+
+  const clean = values.filter(v => Math.abs(v - m) <= threshold * sd);
+  return clean.length ? clean.reduce((a,b)=>a+b,0) / clean.length : m;
+}
+
+function robustMeanInfo(values, threshold = 2) {
+  if (!values.length) return { mean: null, excluded: 0, n: 0 };
+  if (values.length <= 2) return { mean: values.reduce((a,b)=>a+b,0)/values.length, excluded: 0, n: values.length };
+
+  const m  = values.reduce((a,b)=>a+b,0) / values.length;
+  const sd = Math.sqrt(values.map(v=>(v-m)**2).reduce((a,b)=>a+b,0) / values.length);
+
+  if (sd === 0) return { mean: m, excluded: 0, n: values.length };
+
+  const clean    = values.filter(v => Math.abs(v - m) <= threshold * sd);
+  const excluded = values.length - clean.length;
+  const mean     = clean.length ? clean.reduce((a,b)=>a+b,0) / clean.length : m;
+  return { mean, excluded, n: clean.length };
+}
+
+// ============================================================
+// TEAM STATS (for hip rotation percentile classification)
+// ============================================================
+let teamStats = null;
+
+function computeTeamStats() {
+  function pct(arr, p) {
+    if (!arr.length) return 0;
+    const s = [...arr].sort((a,b) => a-b);
+    const idx = (p/100) * (s.length - 1);
+    const lo = Math.floor(idx), hi = Math.ceil(idx);
+    return lo === hi ? s[lo] : s[lo] + (s[hi] - s[lo]) * (idx - lo);
+  }
+  function avg(arr) { return arr.reduce((a,b)=>a+b,0)/arr.length; }
+  function sd(arr) { const m = avg(arr); return Math.sqrt(arr.map(v=>(v-m)**2).reduce((a,b)=>a+b,0)/arr.length); }
+
+  const reVals = players.flatMap(p => [p.reD, p.reI]).filter(v => v !== null);
+  const riVals = players.flatMap(p => [p.riD, p.riI]).filter(v => v !== null);
+
+  return {
+    reMean: avg(reVals), reSD: sd(reVals),
+    reP33:  pct(reVals, 33),  reP66: pct(reVals, 66),
+    riMean: avg(riVals), riSD: sd(riVals),
+    riP33:  pct(riVals, 33),  riP66: pct(riVals, 66),
+  };
+}
+
+function classifyRot(v, p33, p66) {
+  if (v === null || v === undefined) return null;
+  if (v >= p66) return 'Bueno';
+  if (v >= p33) return 'Regular';
+  return 'Malo';
+}
+
+function clsBadge(cls) {
+  if (!cls) return '';
+  return `<span class="cls-badge ${cls.toLowerCase()}">${cls}</span>`;
+}
+
+// ============================================================
+// OBJECTIVE GENERATION
+// ============================================================
+function generateObjectives(p, stats) {
+  const groups = [];
+
+  // --- ASLR ---
+  const aslrItems = [];
+  const worstAslr = Math.min(p.aslrD ?? 99, p.aslrI ?? 99);
+  if (worstAslr !== 99) {
+    if (worstAslr === 2) aslrItems.push({ text: "Estimular la flexibilidad de la cadena posterior.", level: 'y' });
+    else if (worstAslr === 1) aslrItems.push({ text: "Mejorar la flexibilidad de la cadena posterior.", level: 'r' });
+  }
+  if (aslrItems.length) groups.push({ title: 'ASLR', items: aslrItems });
+
+  // --- TOBILLO (Flexión Dorsal en cm) ---
+  const tobItems = [];
+  function ankleLevel(v) {
+    if (v === null || v === undefined) return null;
+    if (v > 10) return 'ok';
+    if (v >= 8)  return 'y';
+    return 'r';
+  }
+  const lvD = ankleLevel(p.fdD), lvI = ankleLevel(p.fdI);
+  const worstAnkle = (lvD === 'r' || lvI === 'r') ? 'r' : (lvD === 'y' || lvI === 'y') ? 'y' : (lvD === 'ok' || lvI === 'ok') ? 'ok' : null;
+  if (worstAnkle === 'y') tobItems.push({ text: "Estimular la movilidad de tobillo.", level: 'y' });
+  else if (worstAnkle === 'r') tobItems.push({ text: "Mejorar la movilidad de tobillo.", level: 'r' });
+  if (p.pFD !== null && p.fdD !== null && p.fdI !== null && Math.abs(p.pFD) > 10) {
+    const worseSide = p.fdD < p.fdI ? 'derecho' : 'izquierdo';
+    tobItems.push({ text: `Mejorar la movilidad del tobillo ${worseSide} (menor rango de movimiento).`, level: 'r' });
+  }
+  if (tobItems.length) groups.push({ title: 'Movilidad de Tobillo', items: tobItems });
+
+  // --- CADERA (RE + RI por percentiles) ---
+  const cadItems = [];
+  const hipClasses = [
+    classifyRot(p.reD, stats.reP33, stats.reP66),
+    classifyRot(p.reI, stats.reP33, stats.reP66),
+    classifyRot(p.riD, stats.riP33, stats.riP66),
+    classifyRot(p.riI, stats.riP33, stats.riP66),
+  ].filter(v => v);
+  const hipWorst = hipClasses.includes('Malo') ? 'Malo' : hipClasses.includes('Regular') ? 'Regular' : hipClasses.length ? 'Bueno' : null;
+  if (hipWorst === 'Regular') cadItems.push({ text: "Estimular la movilidad de cadera.", level: 'y' });
+  else if (hipWorst === 'Malo') cadItems.push({ text: "Mejorar la movilidad de cadera.", level: 'r' });
+  const reAsim = p.pRE !== null && Math.abs(p.pRE) > 10;
+  const riAsim = p.pRI !== null && Math.abs(p.pRI) > 10;
+  if (reAsim || riAsim) {
+    cadItems.push({ text: "Mejorar la movilidad de la cadera con menor rango de movimiento.", level: 'r' });
+  }
+  if (cadItems.length) groups.push({ title: 'Movilidad de Cadera', items: cadItems });
+
+  // --- SENTADILLA DE ARRANQUE ---
+  const oqsItems = [];
+  const segs = [
+    { key:'cerv', name:'la región cervical' },
+    { key:'esc',  name:'la cintura escapular' },
+    { key:'codo', name:'codo' },
+    { key:'lumb', name:'la región lumbar' },
+    { key:'cad',  name:'cadera' },
+    { key:'rod',  name:'rodilla' },
+    { key:'tob',  name:'tobillo' },
+  ];
+  segs.forEach(seg => {
+    const v = p[seg.key];
+    if (v === 2) oqsItems.push({ text: `Estimular la movilidad y el control de ${seg.name}.`, level: 'y' });
+    else if (v === 1) oqsItems.push({ text: `Mejorar la movilidad y el control de ${seg.name}.`, level: 'r' });
+  });
+  if (oqsItems.length) groups.push({ title: 'Sentadilla de Arranque', items: oqsItems });
+
+  return groups;
+}
+
+function renderObjectives(p) {
+  const groups = generateObjectives(p, teamStats);
+  if (!groups.length) {
+    return `<div class="obj-section"><h3>🎯 Objetivos de Trabajo</h3><div class="obj-group"><div class="obj-no-items">✅ Sin objetivos — todos los resultados son óptimos.</div></div></div>`;
+  }
+  const html = groups.map(g => `
+    <div class="obj-group">
+      <div class="obj-group-title">${g.title}</div>
+      ${g.items.map(item => `
+        <div class="obj-item">
+          <span class="obj-icon">${item.level === 'r' ? '🔴' : '🟡'}</span>
+          <span>${item.text}</span>
+        </div>`).join('')}
+    </div>`).join('');
+  return `<div class="obj-section"><h3>🎯 Objetivos de Trabajo</h3>${html}</div>`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  teamStats = computeTeamStats();
+  renderCards();
+  renderTable();
+
+  const sel = document.getElementById('player-select');
+  players.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.name;
+    opt.textContent = p.name + ' — ' + p.pos;
+    sel.appendChild(opt);
+  });
+  document.getElementById('individual-content').innerHTML = '<p class="no-data">Seleccioná un jugador del menú de arriba o hacé clic en uno de la tabla de equipo.</p>';
+}
+
+init();
+
+// ── Body diagram toggle (mobile) ────────────────────────────
+function toggleBody(view, btn) {
+  // panels
+  const panels = btn.closest('.test-body').querySelectorAll('.body-panel');
+  panels.forEach((p, i) => p.classList.toggle('active', i === (view === 'front' ? 0 : 1)));
+  // buttons
+  const btns = btn.parentElement.querySelectorAll('.body-toggle-btn');
+  btns.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Compact table on mobile: hide less critical cols ─────────
+function adaptTableForMobile() {
+  if (window.innerWidth > 700) return;
+  // columns to hide on mobile (0-indexed): keep name(0), pos(1), alerts-related, hide some asim cols
+  const hideCols = [4, 5, 7, 8, 9, 10]; // RE, RI, adD summary cols etc.
+  document.querySelectorAll('table thead th, table tbody td').forEach(cell => {
+    const idx = cell.cellIndex;
+    if (hideCols.includes(idx)) cell.style.display = 'none';
+  });
+}
+
+window.addEventListener('resize', adaptTableForMobile);
+document.addEventListener('DOMContentLoaded', () => setTimeout(adaptTableForMobile, 200));
+</script>
+</body>
+</html>
