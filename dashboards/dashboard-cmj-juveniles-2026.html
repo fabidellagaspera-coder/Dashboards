@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard CMJ Juveniles 2026 · GYE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#2b2b2b;color:#f0f0f0;min-height:100vh}
+
+.header{background:linear-gradient(135deg,#1a1a1a 0%,#252525 60%,#1e1e1e 100%);border-bottom:1px solid #3a3a3a;padding:0 36px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffffff,#888,#ffffff)}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+.header-left{display:flex;flex-direction:column;gap:6px}
+.header-tag{font-size:9px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:3px}
+.header-text h1{font-size:28px;font-weight:900;color:#ffffff;letter-spacing:-0.8px;line-height:1}
+.header-text p{font-size:11px;color:#aaa;margin-top:6px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
+.header-right{display:flex;align-items:center;gap:24px}
+.header-badge{text-align:right}
+.header-badge .badge-val{font-size:11px;font-weight:800;color:#ddd;letter-spacing:1px;text-transform:uppercase}
+.header-badge .badge-lbl{font-size:9px;color:#666;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.header-divider-v{width:1px;height:36px;background:#3a3a3a}
+
+.controls{padding:20px 36px 0;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.ctrl-group{display:flex;align-items:center;gap:10px}
+.ctrl-label{font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1.2px}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap}
+.ctrl-sep{width:1px;height:28px;background:#444}
+
+.cat-btn{padding:6px 14px;border-radius:6px;border:1px solid #555;background:#383838;color:#ccc;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.cat-btn:hover{border-color:#888;color:#fff}
+.cat-btn.active{background:#fff;border-color:#fff;color:#111}
+.mes-btn{padding:5px 12px;border-radius:5px;border:1px solid #555;background:#383838;color:#ccc;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.mes-btn:hover{border-color:#888;color:#fff}
+.mes-btn.active{background:#555;border-color:#888;color:#fff}
+
+.stat-cards{display:flex;gap:16px;padding:24px 36px 0;flex-wrap:wrap}
+.stat-card{flex:1;min-width:140px;background:#333;border:1px solid #484848;border-radius:10px;padding:18px 20px}
+.stat-card .val{font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px}
+.stat-card .lbl{font-size:10px;color:#bbb;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+.tabs{display:flex;gap:0;padding:24px 36px 0;border-bottom:1px solid #444}
+.tab{padding:10px 20px;font-size:12px;font-weight:700;color:#999;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.5px}
+.tab:hover{color:#ddd}
+.tab.active{color:#fff;border-bottom-color:#fff}
+
+.content{padding:28px 36px}
+.metric-header{margin-bottom:20px}
+.metric-header h2{font-size:18px;font-weight:800;color:#fff}
+.metric-header h2 span{font-size:13px;font-weight:500;color:#aaa;margin-left:6px}
+.metric-header p{font-size:12px;color:#bbb;margin-top:4px}
+.metric-meta{display:flex;align-items:center;gap:16px;margin-top:8px;font-size:11px;color:#aaa;font-weight:600}
+.meta-dot{width:6px;height:6px;border-radius:50%;background:#666;display:inline-block;margin-right:4px}
+
+.avg-banner{display:inline-block;font-size:32px;font-weight:900;color:#fff;letter-spacing:-1px;float:right;text-align:right;line-height:1}
+.avg-banner small{display:block;font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1.5px;margin-top:2px}
+
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th{font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;padding:8px 12px;text-align:left;border-bottom:1px solid #484848}
+td{padding:10px 12px;border-bottom:1px solid #383838;font-size:13px;vertical-align:middle}
+tr:hover td{background:#303030}
+.rank{color:#aaa;font-weight:700;font-size:11px;width:30px}
+.jugador-name{font-weight:600;color:#e0e0e0}
+.jugador-name.top{color:#fff}
+.mes-badge{font-size:10px;color:#bbb;font-weight:600}
+.metric-val{font-weight:700;color:#fff;font-size:14px}
+
+.bar-wrap{width:120px;height:5px;background:#484848;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:8px}
+.bar-up{height:5px;border-radius:3px;background:linear-gradient(90deg,#16a34a,#22c55e)}
+.bar-dn{height:5px;border-radius:3px;background:linear-gradient(90deg,#991b1b,#ef4444)}
+
+.b-up{background:#14532d;color:#4ade80;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;min-width:52px;text-align:center}
+.b-dn{background:#450a0a;color:#f87171;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;min-width:52px;text-align:center}
+.b-neu{background:#484848;color:#ccc;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;min-width:52px;text-align:center}
+
+/* Asymmetries */
+.asym-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #3a3a3a}
+.asym-label{font-size:12px;font-weight:600;color:#bbb;width:220px}
+.asym-bar-wrap{flex:1;height:6px;background:#484848;border-radius:3px;margin:0 12px;position:relative}
+.asym-fill{height:6px;border-radius:3px}
+.a-low{background:linear-gradient(90deg,#166534,#22c55e)}
+.a-mid{background:linear-gradient(90deg,#92400e,#f59e0b)}
+.a-hi{background:linear-gradient(90deg,#991b1b,#ef4444)}
+.asym-v{font-size:12px;font-weight:700;width:48px;text-align:right}
+.av-low{color:#4ade80}
+.av-mid{color:#fbbf24}
+.av-hi{color:#f87171}
+.asym-s{font-size:10px;font-weight:700;width:20px;text-align:center;padding:2px 4px;border-radius:3px;margin-left:6px}
+.sL{background:#1e3a5f;color:#60a5fa}
+.sR{background:#3b1f1f;color:#f87171}
+
+.asym-player-row td{padding:8px 12px}
+.asym-group-header{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;padding:14px 12px 6px;background:transparent}
+
+.empty{text-align:center;color:#aaa;padding:60px;font-size:14px}
+.clr{clear:both}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 700px) {
+  .header{padding:0 16px}
+  .header-top{flex-direction:column;align-items:flex-start;gap:12px;padding:16px 0}
+  .header-tag{font-size:8px;letter-spacing:2px}
+  .header-text h1{font-size:18px}
+  .header-text p{font-size:9px;margin-top:4px}
+  .header-right{display:flex;flex-wrap:wrap;gap:12px;width:100%;padding-bottom:12px}
+  .header-badge .badge-val{font-size:10px}
+  .header-divider-v{display:none}
+
+  .controls{padding:14px 16px 0;gap:12px;flex-direction:column;align-items:flex-start}
+  .ctrl-sep{display:none}
+  .ctrl-label{font-size:9px}
+  .cat-btn{padding:5px 10px;font-size:11px}
+  .mes-btn{padding:4px 9px;font-size:10px}
+
+  .stat-cards{padding:14px 16px 0;gap:10px}
+  .stat-card{min-width:calc(50% - 5px);padding:12px 14px}
+  .stat-card .val{font-size:22px}
+  .stat-card .lbl{font-size:9px}
+
+  .tabs{padding:16px 16px 0;overflow-x:auto;flex-wrap:nowrap}
+  .tab{padding:8px 12px;font-size:11px;white-space:nowrap;flex-shrink:0}
+
+  .content{padding:16px}
+  .metric-header h2{font-size:15px}
+  .avg-banner{font-size:24px;float:none;display:block;margin-bottom:8px}
+  .clr{clear:none}
+
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  th,td{padding:8px 8px;font-size:11px;white-space:nowrap}
+  .bar-wrap{width:70px}
+  .jugador-name{max-width:120px;overflow:hidden;text-overflow:ellipsis}
+
+  .asym-bar-wrap{width:40px !important}
+}
+
+/* === COMPARATIVO === */
+.comp-controls{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;align-items:flex-end}
+.comp-ctrl{display:flex;flex-direction:column;gap:6px}
+.comp-ctrl label{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em}
+.comp-ctrl select{background:#1e1e1e;color:#fff;border:1px solid #444;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer;min-width:160px}
+.comp-ctrl select:focus{outline:none;border-color:#4fc3f7}
+.comp-mes1-lbl{color:#4fc3f7;font-weight:700}
+.comp-mes2-lbl{color:#81c784;font-weight:700}
+.comp-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;font-size:20px;font-weight:700;padding:14px 18px;background:#1a1a1a;border-radius:10px;border-left:4px solid #4fc3f7}
+.comp-table{width:100%;border-collapse:collapse}
+.comp-table th{background:#1a1a1a;color:#aaa;font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:10px 14px;text-align:left;border-bottom:1px solid #333}
+.comp-table td{padding:10px 14px;border-bottom:1px solid #2a2a2a;vertical-align:middle}
+.comp-table tr:hover td{background:rgba(255,255,255,.03)}
+.comp-metric-name{font-size:13px;font-weight:600;color:#e0e0e0}
+.comp-metric-name small{font-size:10px;color:#888;font-weight:400;margin-left:4px}
+.comp-v1{font-size:15px;color:#4fc3f7;font-weight:700}
+.comp-v2{font-size:15px;color:#81c784;font-weight:700}
+.comp-arrow-cell{font-size:18px;text-align:center}
+.tab.comp-tab{border:1px solid #4fc3f7}
+.tab.comp-tab.active{background:linear-gradient(135deg,#0288d1,#4fc3f7);color:#fff}
+@media(max-width:700px){.comp-controls{flex-direction:column}.comp-ctrl select{min-width:100%}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-left">
+      <span class="header-tag">Club Atlético Gimnasia y Esgrima &mdash; Mendoza 1908</span>
+      <div class="header-text">
+        <h1>Dashboard CMJ Juveniles 2026</h1>
+        <p>Análisis de salto &nbsp;&middot;&nbsp; Fuerza &nbsp;&middot;&nbsp; Asimetrías</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-badge">
+        <div class="badge-val">Temporada 2026</div>
+        <div class="badge-lbl">Categorías Juveniles</div>
+      </div>
+      <div class="header-divider-v"></div>
+      <div class="header-badge">
+        <div class="badge-val" id="hdr-jugadores">—</div>
+        <div class="badge-lbl">Jugadores</div>
+      </div>
+      <div class="header-divider-v"></div>
+      <div class="header-badge">
+        <div class="badge-val" id="hdr-mes">Todos</div>
+        <div class="badge-lbl">Período</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Categoría</span>
+    <div class="btn-row" id="catBtns"></div>
+  </div>
+  <div class="ctrl-sep"></div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Mes</span>
+    <div class="btn-row" id="mesBtns"></div>
+  </div>
+</div>
+
+<div class="stat-cards" id="statCards"></div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="content" id="content"></div>
+
+<script>
+const DATA = [{"jugador":"Bruno Palta","categoria":"5ta","mes":"Abril","jump_height":26.3,"rsi":0.39,"cpf_bm":25.0,"epp_bm":11.8,"pp_bm":45.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Jose Montaña","categoria":"5ta","mes":"Abril","jump_height":35.8,"rsi":0.57,"cpf_bm":24.9,"epp_bm":16.9,"pp_bm":56.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Verna","categoria":"5ta","mes":"Abril","jump_height":34.0,"rsi":0.43,"cpf_bm":21.9,"epp_bm":17.1,"pp_bm":50.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santino González","categoria":"5ta","mes":"Abril","jump_height":31.0,"rsi":0.51,"cpf_bm":26.0,"epp_bm":17.0,"pp_bm":47.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Roman Galeazzi","categoria":"5ta","mes":"Abril","jump_height":41.5,"rsi":0.55,"cpf_bm":26.0,"epp_bm":19.2,"pp_bm":59.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Alaniz","categoria":"5ta","mes":"Abril","jump_height":36.7,"rsi":0.44,"cpf_bm":23.8,"epp_bm":13.9,"pp_bm":50.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Giovanni Ellena","categoria":"5ta","mes":"Abril","jump_height":34.2,"rsi":0.46,"cpf_bm":22.0,"epp_bm":16.3,"pp_bm":50.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bruno Palta","categoria":"5ta","mes":"Abril","jump_height":23.9,"rsi":0.36,"cpf_bm":23.2,"epp_bm":13.9,"pp_bm":41.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Geronimo Videla","categoria":"5ta","mes":"Abril","jump_height":33.3,"rsi":0.41,"cpf_bm":22.0,"epp_bm":13.6,"pp_bm":50.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Carrillo","categoria":"5ta","mes":"Abril","jump_height":36.2,"rsi":0.52,"cpf_bm":25.9,"epp_bm":17.3,"pp_bm":50.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tiziano Olmos","categoria":"5ta","mes":"Abril","jump_height":35.3,"rsi":0.38,"cpf_bm":23.5,"epp_bm":11.2,"pp_bm":54.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Leonel Trejo","categoria":"5ta","mes":"Abril","jump_height":32.0,"rsi":0.48,"cpf_bm":23.3,"epp_bm":14.8,"pp_bm":50.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luciano Montañoli","categoria":"5ta","mes":"Abril","jump_height":34.6,"rsi":0.53,"cpf_bm":24.2,"epp_bm":18.4,"pp_bm":51.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Benjamin Rojas","categoria":"5ta","mes":"Abril","jump_height":33.4,"rsi":0.42,"cpf_bm":23.1,"epp_bm":14.4,"pp_bm":51.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Geronimo La Falla","categoria":"5ta","mes":"Abril","jump_height":42.6,"rsi":0.65,"cpf_bm":26.7,"epp_bm":24.0,"pp_bm":59.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tobias Mugione","categoria":"5ta","mes":"Abril","jump_height":32.4,"rsi":0.42,"cpf_bm":23.7,"epp_bm":21.5,"pp_bm":48.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Matias Vargas","categoria":"5ta","mes":"Abril","jump_height":34.1,"rsi":0.48,"cpf_bm":23.4,"epp_bm":17.1,"pp_bm":52.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Villar","categoria":"5ta","mes":"Abril","jump_height":34.9,"rsi":0.6,"cpf_bm":25.8,"epp_bm":23.1,"pp_bm":53.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Claudio Ulloa","categoria":"5ta","mes":"Abril","jump_height":37.7,"rsi":0.49,"cpf_bm":24.4,"epp_bm":16.7,"pp_bm":52.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Alejo Martin Daine","categoria":"5ta","mes":"Abril","jump_height":33.7,"rsi":0.49,"cpf_bm":29.8,"epp_bm":17.4,"pp_bm":53.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Valentin Recio","categoria":"5ta","mes":"Abril","jump_height":34.0,"rsi":0.58,"cpf_bm":28.9,"epp_bm":21.3,"pp_bm":53.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Cruz Castaño","categoria":"5ta","mes":"Abril","jump_height":38.0,"rsi":0.59,"cpf_bm":27.7,"epp_bm":23.6,"pp_bm":57.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Facundo Sabattini","categoria":"5ta","mes":"Abril","jump_height":39.3,"rsi":0.49,"cpf_bm":23.7,"epp_bm":20.8,"pp_bm":54.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luciano Temi","categoria":"5ta","mes":"Abril","jump_height":34.7,"rsi":0.49,"cpf_bm":26.3,"epp_bm":10.1,"pp_bm":54.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Obulgen","categoria":"5ta","mes":"Abril","jump_height":34.0,"rsi":0.45,"cpf_bm":23.3,"epp_bm":21.9,"pp_bm":47.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Leandro Herrera","categoria":"5ta","mes":"Abril","jump_height":34.3,"rsi":0.48,"cpf_bm":22.5,"epp_bm":14.9,"pp_bm":51.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Cesar Corvalan","categoria":"5ta","mes":"Abril","jump_height":34.4,"rsi":0.49,"cpf_bm":25.7,"epp_bm":13.4,"pp_bm":58.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mauricio López","categoria":"5ta","mes":"Abril","jump_height":38.1,"rsi":0.54,"cpf_bm":24.3,"epp_bm":17.3,"pp_bm":58.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santino Marchisio","categoria":"5ta","mes":"Abril","jump_height":39.6,"rsi":0.48,"cpf_bm":23.9,"epp_bm":14.9,"pp_bm":59.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Pablo Llompart","categoria":"5ta","mes":"Abril","jump_height":28.2,"rsi":0.47,"cpf_bm":27.9,"epp_bm":21.2,"pp_bm":47.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Stefano Leggio","categoria":"5ta","mes":"Abril","jump_height":32.1,"rsi":0.48,"cpf_bm":25.1,"epp_bm":15.9,"pp_bm":49.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Mura","categoria":"5ta","mes":"Abril","jump_height":36.3,"rsi":0.51,"cpf_bm":26.2,"epp_bm":14.3,"pp_bm":52.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Uriel Bravo","categoria":"5ta","mes":"Abril","jump_height":32.5,"rsi":0.46,"cpf_bm":23.8,"epp_bm":19.0,"pp_bm":49.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bruno Cádiz","categoria":"5ta","mes":"Abril","jump_height":38.2,"rsi":0.61,"cpf_bm":27.8,"epp_bm":14.8,"pp_bm":58.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Adrian Lizondo","categoria":"5ta","mes":"Abril","jump_height":28.5,"rsi":0.33,"cpf_bm":24.3,"epp_bm":16.0,"pp_bm":42.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bruno Gueli","categoria":"6ta","mes":"Abril","jump_height":32.8,"rsi":0.44,"cpf_bm":24.3,"epp_bm":14.0,"pp_bm":49.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Diaz","categoria":"6ta","mes":"Abril","jump_height":27.2,"rsi":0.43,"cpf_bm":25.5,"epp_bm":16.6,"pp_bm":42.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Valentino Tomba","categoria":"6ta","mes":"Abril","jump_height":35.4,"rsi":0.51,"cpf_bm":23.8,"epp_bm":18.7,"pp_bm":52.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Valentin Tripolone","categoria":"6ta","mes":"Abril","jump_height":28.5,"rsi":0.52,"cpf_bm":27.9,"epp_bm":19.3,"pp_bm":50.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Uriel Vera","categoria":"6ta","mes":"Abril","jump_height":27.0,"rsi":0.46,"cpf_bm":28.6,"epp_bm":18.6,"pp_bm":44.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Uriel Mayorga","categoria":"6ta","mes":"Abril","jump_height":29.9,"rsi":0.42,"cpf_bm":24.3,"epp_bm":12.4,"pp_bm":49.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tiziano Gonzalez","categoria":"6ta","mes":"Abril","jump_height":32.9,"rsi":0.44,"cpf_bm":24.7,"epp_bm":19.7,"pp_bm":50.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Quiroga","categoria":"6ta","mes":"Abril","jump_height":25.1,"rsi":0.33,"cpf_bm":23.1,"epp_bm":9.3,"pp_bm":42.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Alvarado","categoria":"6ta","mes":"Abril","jump_height":31.4,"rsi":0.44,"cpf_bm":25.7,"epp_bm":20.7,"pp_bm":45.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Simon Romero","categoria":"6ta","mes":"Abril","jump_height":30.9,"rsi":0.44,"cpf_bm":27.1,"epp_bm":10.8,"pp_bm":52.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santino Tomaselli","categoria":"6ta","mes":"Abril","jump_height":36.4,"rsi":0.54,"cpf_bm":27.1,"epp_bm":16.8,"pp_bm":53.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santino Del Vecchio","categoria":"6ta","mes":"Abril","jump_height":38.2,"rsi":0.47,"cpf_bm":26.3,"epp_bm":9.2,"pp_bm":59.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santiago Caceres","categoria":"6ta","mes":"Abril","jump_height":31.7,"rsi":0.44,"cpf_bm":23.1,"epp_bm":13.5,"pp_bm":48.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Nicolas Quintero","categoria":"6ta","mes":"Abril","jump_height":35.5,"rsi":0.52,"cpf_bm":23.3,"epp_bm":18.1,"pp_bm":51.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Nazareno Cordoba","categoria":"6ta","mes":"Abril","jump_height":33.6,"rsi":0.43,"cpf_bm":23.4,"epp_bm":18.3,"pp_bm":50.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Maximo Contreras","categoria":"6ta","mes":"Abril","jump_height":32.0,"rsi":0.51,"cpf_bm":30.7,"epp_bm":19.3,"pp_bm":53.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Maximo Bugue¤o","categoria":"6ta","mes":"Abril","jump_height":32.2,"rsi":0.48,"cpf_bm":28.2,"epp_bm":18.6,"pp_bm":53.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mauro Rinaldi","categoria":"6ta","mes":"Abril","jump_height":40.2,"rsi":0.52,"cpf_bm":24.0,"epp_bm":16.1,"pp_bm":59.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Matias Sol¡s","categoria":"6ta","mes":"Abril","jump_height":34.2,"rsi":0.45,"cpf_bm":23.2,"epp_bm":19.2,"pp_bm":53.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Matias Mu¤oz","categoria":"6ta","mes":"Abril","jump_height":38.5,"rsi":0.63,"cpf_bm":31.3,"epp_bm":14.8,"pp_bm":64.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lucca Krawezuc","categoria":"6ta","mes":"Abril","jump_height":36.0,"rsi":0.5,"cpf_bm":29.5,"epp_bm":9.9,"pp_bm":60.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lucas Gozalez","categoria":"6ta","mes":"Abril","jump_height":33.6,"rsi":0.57,"cpf_bm":28.7,"epp_bm":23.6,"pp_bm":49.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Diaz","categoria":"6ta","mes":"Abril","jump_height":35.8,"rsi":0.4,"cpf_bm":22.3,"epp_bm":10.7,"pp_bm":49.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Baez","categoria":"6ta","mes":"Abril","jump_height":34.4,"rsi":0.51,"cpf_bm":25.3,"epp_bm":17.1,"pp_bm":54.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Baez","categoria":"6ta","mes":"Abril","jump_height":28.4,"rsi":0.49,"cpf_bm":26.4,"epp_bm":18.4,"pp_bm":49.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Ortega","categoria":"6ta","mes":"Abril","jump_height":35.5,"rsi":0.56,"cpf_bm":27.8,"epp_bm":16.3,"pp_bm":58.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Gimenez","categoria":"6ta","mes":"Abril","jump_height":28.7,"rsi":0.33,"cpf_bm":21.8,"epp_bm":12.8,"pp_bm":45.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Barrios","categoria":"6ta","mes":"Abril","jump_height":40.7,"rsi":0.58,"cpf_bm":25.4,"epp_bm":15.9,"pp_bm":58.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Gonzalo Ceppi","categoria":"6ta","mes":"Abril","jump_height":36.2,"rsi":0.53,"cpf_bm":24.3,"epp_bm":20.1,"pp_bm":54.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Facundo Del Bono","categoria":"6ta","mes":"Abril","jump_height":37.9,"rsi":0.44,"cpf_bm":25.1,"epp_bm":8.9,"pp_bm":58.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Dylan Andino","categoria":"6ta","mes":"Abril","jump_height":28.8,"rsi":0.33,"cpf_bm":21.2,"epp_bm":10.5,"pp_bm":43.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bruno Quintana","categoria":"6ta","mes":"Abril","jump_height":35.0,"rsi":0.53,"cpf_bm":25.7,"epp_bm":14.3,"pp_bm":54.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bruno Buttige","categoria":"6ta","mes":"Abril","jump_height":41.6,"rsi":0.61,"cpf_bm":27.1,"epp_bm":19.8,"pp_bm":58.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Benjamin Jaldin","categoria":"6ta","mes":"Abril","jump_height":35.5,"rsi":0.49,"cpf_bm":26.8,"epp_bm":18.6,"pp_bm":49.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bautista Cordoba","categoria":"6ta","mes":"Abril","jump_height":33.7,"rsi":0.4,"cpf_bm":22.8,"epp_bm":16.7,"pp_bm":49.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bautista Chacon","categoria":"6ta","mes":"Abril","jump_height":35.7,"rsi":0.58,"cpf_bm":28.3,"epp_bm":14.9,"pp_bm":59.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Angel Argumedo","categoria":"6ta","mes":"Abril","jump_height":38.8,"rsi":0.62,"cpf_bm":25.4,"epp_bm":18.2,"pp_bm":59.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Agustin Cabral","categoria":"6ta","mes":"Abril","jump_height":34.0,"rsi":0.46,"cpf_bm":27.0,"epp_bm":18.8,"pp_bm":52.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Alejandro Cerdan","categoria":"6ta","mes":"Abril","jump_height":28.0,"rsi":0.42,"cpf_bm":22.2,"epp_bm":12.7,"pp_bm":43.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Abduk Wekid","categoria":"6ta","mes":"Abril","jump_height":31.2,"rsi":0.44,"cpf_bm":26.0,"epp_bm":16.4,"pp_bm":51.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"David Araya","categoria":"7ma","mes":"Abril","jump_height":42.1,"rsi":0.67,"cpf_bm":30.1,"epp_bm":19.3,"pp_bm":60.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luca Lamotta","categoria":"7ma","mes":"Abril","jump_height":44.4,"rsi":0.71,"cpf_bm":30.2,"epp_bm":31.6,"pp_bm":60.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ulises Marquez","categoria":"7ma","mes":"Abril","jump_height":29.3,"rsi":0.31,"cpf_bm":21.2,"epp_bm":11.4,"pp_bm":46.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tomas Ricarte","categoria":"7ma","mes":"Abril","jump_height":36.0,"rsi":0.48,"cpf_bm":23.0,"epp_bm":20.6,"pp_bm":54.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Suarez","categoria":"7ma","mes":"Abril","jump_height":33.0,"rsi":0.44,"cpf_bm":22.7,"epp_bm":13.1,"pp_bm":51.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Lantres","categoria":"7ma","mes":"Abril","jump_height":35.1,"rsi":0.42,"cpf_bm":27.6,"epp_bm":7.7,"pp_bm":56.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santino Montenegro","categoria":"7ma","mes":"Abril","jump_height":32.0,"rsi":0.47,"cpf_bm":24.6,"epp_bm":14.9,"pp_bm":47.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santiago Moran","categoria":"7ma","mes":"Abril","jump_height":31.5,"rsi":0.34,"cpf_bm":22.1,"epp_bm":8.3,"pp_bm":48.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Michael Leites","categoria":"7ma","mes":"Abril","jump_height":33.3,"rsi":0.44,"cpf_bm":24.6,"epp_bm":9.5,"pp_bm":52.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mateo Soto","categoria":"7ma","mes":"Abril","jump_height":26.6,"rsi":0.53,"cpf_bm":29.3,"epp_bm":24.3,"pp_bm":46.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mateo Escudero","categoria":"7ma","mes":"Abril","jump_height":38.8,"rsi":0.41,"cpf_bm":27.2,"epp_bm":6.6,"pp_bm":63.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Leonel Tello","categoria":"7ma","mes":"Abril","jump_height":30.9,"rsi":0.44,"cpf_bm":24.5,"epp_bm":13.2,"pp_bm":49.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Tejada","categoria":"7ma","mes":"Abril","jump_height":31.1,"rsi":0.48,"cpf_bm":24.4,"epp_bm":14.3,"pp_bm":51.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Morales","categoria":"7ma","mes":"Abril","jump_height":36.4,"rsi":0.42,"cpf_bm":23.7,"epp_bm":14.0,"pp_bm":52.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Mezzenasco","categoria":"7ma","mes":"Abril","jump_height":35.5,"rsi":0.63,"cpf_bm":30.7,"epp_bm":20.9,"pp_bm":58.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Julian Dominguez","categoria":"7ma","mes":"Abril","jump_height":37.9,"rsi":0.41,"cpf_bm":24.2,"epp_bm":9.4,"pp_bm":56.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Julian Alvarez Storni","categoria":"7ma","mes":"Abril","jump_height":37.8,"rsi":0.38,"cpf_bm":23.0,"epp_bm":9.8,"pp_bm":53.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Martin Aguilar","categoria":"7ma","mes":"Abril","jump_height":32.9,"rsi":0.48,"cpf_bm":29.8,"epp_bm":10.7,"pp_bm":57.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Manuel Fernandez","categoria":"7ma","mes":"Abril","jump_height":37.4,"rsi":0.44,"cpf_bm":22.7,"epp_bm":19.1,"pp_bm":51.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Mendez","categoria":"7ma","mes":"Abril","jump_height":31.2,"rsi":0.46,"cpf_bm":27.2,"epp_bm":16.7,"pp_bm":49.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Cruz Gonzalez","categoria":"7ma","mes":"Abril","jump_height":40.0,"rsi":0.42,"cpf_bm":23.0,"epp_bm":9.7,"pp_bm":57.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Iviglia","categoria":"7ma","mes":"Abril","jump_height":29.6,"rsi":0.43,"cpf_bm":24.0,"epp_bm":12.9,"pp_bm":51.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Prymus","categoria":"7ma","mes":"Abril","jump_height":34.8,"rsi":0.46,"cpf_bm":23.2,"epp_bm":16.8,"pp_bm":53.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Javier Carmona","categoria":"7ma","mes":"Abril","jump_height":27.7,"rsi":0.46,"cpf_bm":24.4,"epp_bm":19.7,"pp_bm":46.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Ortiz","categoria":"7ma","mes":"Abril","jump_height":31.7,"rsi":0.45,"cpf_bm":23.2,"epp_bm":15.8,"pp_bm":48.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Genaro Riveros","categoria":"7ma","mes":"Abril","jump_height":37.1,"rsi":0.51,"cpf_bm":24.1,"epp_bm":12.6,"pp_bm":54.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Genaro Colilaf","categoria":"7ma","mes":"Abril","jump_height":33.4,"rsi":0.57,"cpf_bm":33.1,"epp_bm":15.0,"pp_bm":56.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Gael Guajardo","categoria":"7ma","mes":"Abril","jump_height":33.2,"rsi":0.49,"cpf_bm":24.0,"epp_bm":19.3,"pp_bm":51.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Facundo Azcurra","categoria":"7ma","mes":"Abril","jump_height":29.9,"rsi":0.4,"cpf_bm":21.8,"epp_bm":17.8,"pp_bm":44.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Elias Acuña","categoria":"7ma","mes":"Abril","jump_height":25.3,"rsi":0.34,"cpf_bm":23.4,"epp_bm":10.6,"pp_bm":43.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Fabricio Benitez","categoria":"7ma","mes":"Abril","jump_height":40.4,"rsi":0.57,"cpf_bm":24.5,"epp_bm":17.2,"pp_bm":58.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Emmanuel Rivera","categoria":"7ma","mes":"Abril","jump_height":41.5,"rsi":0.53,"cpf_bm":23.1,"epp_bm":18.1,"pp_bm":58.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Dylan Uño","categoria":"7ma","mes":"Abril","jump_height":33.8,"rsi":0.42,"cpf_bm":25.7,"epp_bm":14.1,"pp_bm":54.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Benjamin Donadell","categoria":"7ma","mes":"Abril","jump_height":34.1,"rsi":0.38,"cpf_bm":22.2,"epp_bm":10.4,"pp_bm":50.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bastian Suazo","categoria":"7ma","mes":"Abril","jump_height":37.3,"rsi":0.57,"cpf_bm":31.2,"epp_bm":3.7,"pp_bm":65.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Atila Montiel","categoria":"7ma","mes":"Abril","jump_height":32.4,"rsi":0.55,"cpf_bm":27.6,"epp_bm":14.4,"pp_bm":53.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Agustin Garcia","categoria":"7ma","mes":"Abril","jump_height":30.4,"rsi":0.5,"cpf_bm":25.4,"epp_bm":17.1,"pp_bm":47.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Aaron Jeraldo","categoria":"7ma","mes":"Abril","jump_height":25.8,"rsi":0.36,"cpf_bm":26.6,"epp_bm":9.1,"pp_bm":48.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Alan Aye","categoria":"8va","mes":"Abril","jump_height":35.1,"rsi":0.46,"cpf_bm":26.5,"epp_bm":22.6,"pp_bm":49.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lucas Alaniz","categoria":"8va","mes":"Abril","jump_height":30.7,"rsi":0.43,"cpf_bm":22.7,"epp_bm":12.1,"pp_bm":46.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Vittorio Andreoni","categoria":"8va","mes":"Abril","jump_height":30.1,"rsi":0.46,"cpf_bm":24.7,"epp_bm":24.2,"pp_bm":43.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Valentino Molina","categoria":"8va","mes":"Abril","jump_height":27.7,"rsi":0.4,"cpf_bm":23.1,"epp_bm":19.0,"pp_bm":42.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Valentino Bresci","categoria":"8va","mes":"Abril","jump_height":27.8,"rsi":0.49,"cpf_bm":26.0,"epp_bm":21.2,"pp_bm":45.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tomas Vargas","categoria":"8va","mes":"Abril","jump_height":37.4,"rsi":0.57,"cpf_bm":25.3,"epp_bm":14.8,"pp_bm":57.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tomas Peralta","categoria":"8va","mes":"Abril","jump_height":35.4,"rsi":0.54,"cpf_bm":23.5,"epp_bm":22.2,"pp_bm":51.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tiziano Campos","categoria":"8va","mes":"Abril","jump_height":41.7,"rsi":0.61,"cpf_bm":28.1,"epp_bm":28.4,"pp_bm":55.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tiago Quiroga","categoria":"8va","mes":"Abril","jump_height":27.8,"rsi":0.41,"cpf_bm":24.1,"epp_bm":17.7,"pp_bm":43.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santiago Navesi","categoria":"8va","mes":"Abril","jump_height":30.7,"rsi":0.39,"cpf_bm":22.4,"epp_bm":15.6,"pp_bm":49.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Pedro Peñaranda","categoria":"8va","mes":"Abril","jump_height":32.1,"rsi":0.43,"cpf_bm":22.7,"epp_bm":16.7,"pp_bm":48.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santiago Camargo","categoria":"8va","mes":"Abril","jump_height":30.4,"rsi":0.56,"cpf_bm":27.8,"epp_bm":24.8,"pp_bm":48.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Natanael Martínez","categoria":"8va","mes":"Abril","jump_height":31.8,"rsi":0.48,"cpf_bm":22.8,"epp_bm":22.0,"pp_bm":47.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Máximo Magistretti","categoria":"8va","mes":"Abril","jump_height":32.4,"rsi":0.54,"cpf_bm":24.4,"epp_bm":22.4,"pp_bm":52.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Maximiliano Ceneri","categoria":"8va","mes":"Abril","jump_height":33.6,"rsi":0.36,"cpf_bm":20.2,"epp_bm":13.8,"pp_bm":46.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Máximo Barón","categoria":"8va","mes":"Abril","jump_height":29.7,"rsi":0.4,"cpf_bm":22.2,"epp_bm":20.1,"pp_bm":45.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mauro Ortega","categoria":"8va","mes":"Abril","jump_height":30.8,"rsi":0.44,"cpf_bm":22.2,"epp_bm":16.7,"pp_bm":45.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mateo Rodríguez","categoria":"8va","mes":"Abril","jump_height":17.3,"rsi":0.31,"cpf_bm":23.3,"epp_bm":19.0,"pp_bm":31.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lucio Bossio","categoria":"8va","mes":"Abril","jump_height":30.8,"rsi":0.41,"cpf_bm":24.0,"epp_bm":16.5,"pp_bm":45.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lorenzo Boerr","categoria":"8va","mes":"Abril","jump_height":30.3,"rsi":0.49,"cpf_bm":24.9,"epp_bm":14.8,"pp_bm":50.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro González","categoria":"8va","mes":"Abril","jump_height":30.3,"rsi":0.4,"cpf_bm":23.1,"epp_bm":18.0,"pp_bm":48.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Barrera","categoria":"8va","mes":"Abril","jump_height":35.9,"rsi":0.5,"cpf_bm":26.9,"epp_bm":23.2,"pp_bm":51.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joshua Toledo","categoria":"8va","mes":"Abril","jump_height":32.6,"rsi":0.48,"cpf_bm":23.4,"epp_bm":17.6,"pp_bm":49.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"José Abraham","categoria":"8va","mes":"Abril","jump_height":41.2,"rsi":0.65,"cpf_bm":26.8,"epp_bm":20.7,"pp_bm":58.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joel Pérez","categoria":"8va","mes":"Abril","jump_height":31.5,"rsi":0.38,"cpf_bm":21.0,"epp_bm":17.0,"pp_bm":43.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquín Daher","categoria":"8va","mes":"Abril","jump_height":32.3,"rsi":0.63,"cpf_bm":26.7,"epp_bm":24.9,"pp_bm":50.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Franco Minni","categoria":"8va","mes":"Abril","jump_height":32.5,"rsi":0.42,"cpf_bm":23.2,"epp_bm":17.5,"pp_bm":51.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Francesco Ponce","categoria":"8va","mes":"Abril","jump_height":30.1,"rsi":0.5,"cpf_bm":24.5,"epp_bm":19.7,"pp_bm":48.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bruno Leal","categoria":"8va","mes":"Abril","jump_height":33.7,"rsi":0.43,"cpf_bm":24.2,"epp_bm":20.8,"pp_bm":53.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Benjamín Lucero","categoria":"8va","mes":"Abril","jump_height":28.7,"rsi":0.49,"cpf_bm":25.6,"epp_bm":21.6,"pp_bm":46.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bautista Sánchez","categoria":"8va","mes":"Abril","jump_height":39.1,"rsi":0.54,"cpf_bm":23.1,"epp_bm":17.5,"pp_bm":55.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Benjamín Ascanio","categoria":"8va","mes":"Abril","jump_height":33.3,"rsi":0.49,"cpf_bm":26.3,"epp_bm":21.5,"pp_bm":48.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bautista Caride","categoria":"8va","mes":"Abril","jump_height":30.8,"rsi":0.41,"cpf_bm":23.1,"epp_bm":22.0,"pp_bm":44.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ángel Chocobar","categoria":"8va","mes":"Abril","jump_height":28.2,"rsi":0.35,"cpf_bm":21.1,"epp_bm":16.9,"pp_bm":41.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Federico Montaña","categoria":"8va","mes":"Abril","jump_height":30.6,"rsi":0.42,"cpf_bm":23.6,"epp_bm":17.9,"pp_bm":50.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Federico Montaña","categoria":"8va","mes":"Abril","jump_height":30.9,"rsi":0.4,"cpf_bm":23.5,"epp_bm":14.4,"pp_bm":51.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Amico","categoria":"9na","mes":"Abril","jump_height":32.1,"rsi":0.48,"cpf_bm":26.5,"epp_bm":13.0,"pp_bm":53.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Valentino Garcia","categoria":"9na","mes":"Abril","jump_height":32.4,"rsi":0.42,"cpf_bm":21.2,"epp_bm":20.2,"pp_bm":46.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Galarza","categoria":"9na","mes":"Abril","jump_height":23.6,"rsi":0.34,"cpf_bm":22.5,"epp_bm":22.6,"pp_bm":39.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Cabral","categoria":"9na","mes":"Abril","jump_height":25.2,"rsi":0.37,"cpf_bm":21.9,"epp_bm":17.1,"pp_bm":38.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Araya","categoria":"9na","mes":"Abril","jump_height":29.8,"rsi":0.46,"cpf_bm":23.1,"epp_bm":19.1,"pp_bm":47.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santiago Gimenez","categoria":"9na","mes":"Abril","jump_height":29.1,"rsi":0.41,"cpf_bm":24.8,"epp_bm":12.8,"pp_bm":47.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santino Guardia","categoria":"9na","mes":"Abril","jump_height":29.6,"rsi":0.46,"cpf_bm":23.8,"epp_bm":21.5,"pp_bm":44.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mateo Moreno","categoria":"9na","mes":"Abril","jump_height":26.1,"rsi":0.3,"cpf_bm":22.2,"epp_bm":15.4,"pp_bm":41.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mateo Daza","categoria":"9na","mes":"Abril","jump_height":32.0,"rsi":0.52,"cpf_bm":25.8,"epp_bm":24.3,"pp_bm":45.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Martiniano Bustos","categoria":"9na","mes":"Abril","jump_height":24.7,"rsi":0.36,"cpf_bm":22.5,"epp_bm":23.3,"pp_bm":40.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lionel Zarate","categoria":"9na","mes":"Abril","jump_height":26.4,"rsi":0.31,"cpf_bm":20.5,"epp_bm":12.5,"pp_bm":41.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lionel Videla","categoria":"9na","mes":"Abril","jump_height":35.8,"rsi":0.45,"cpf_bm":23.9,"epp_bm":19.6,"pp_bm":50.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lauriano Aguilera","categoria":"9na","mes":"Abril","jump_height":29.0,"rsi":0.34,"cpf_bm":21.8,"epp_bm":14.6,"pp_bm":47.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Jonas Godoy","categoria":"9na","mes":"Abril","jump_height":29.2,"rsi":0.37,"cpf_bm":21.1,"epp_bm":22.8,"pp_bm":44.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Cruz Aragon","categoria":"9na","mes":"Abril","jump_height":33.6,"rsi":0.44,"cpf_bm":21.4,"epp_bm":17.0,"pp_bm":49.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Cortes","categoria":"9na","mes":"Abril","jump_height":32.8,"rsi":0.42,"cpf_bm":25.0,"epp_bm":21.9,"pp_bm":46.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Antte","categoria":"9na","mes":"Abril","jump_height":35.8,"rsi":0.5,"cpf_bm":26.2,"epp_bm":18.1,"pp_bm":50.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ivan Funes","categoria":"9na","mes":"Abril","jump_height":31.9,"rsi":0.41,"cpf_bm":24.7,"epp_bm":19.7,"pp_bm":46.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ian Moreno","categoria":"9na","mes":"Abril","jump_height":25.1,"rsi":0.41,"cpf_bm":24.6,"epp_bm":25.0,"pp_bm":37.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ian Araya","categoria":"9na","mes":"Abril","jump_height":34.0,"rsi":0.5,"cpf_bm":24.6,"epp_bm":18.0,"pp_bm":51.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Gonzalo Gimenez","categoria":"9na","mes":"Abril","jump_height":32.1,"rsi":0.43,"cpf_bm":24.3,"epp_bm":20.3,"pp_bm":47.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Giuliano Nieto","categoria":"9na","mes":"Abril","jump_height":25.4,"rsi":0.33,"cpf_bm":22.2,"epp_bm":18.0,"pp_bm":40.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Giovani Godoy","categoria":"9na","mes":"Abril","jump_height":21.0,"rsi":0.27,"cpf_bm":22.1,"epp_bm":16.2,"pp_bm":33.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Franchesco Suco","categoria":"9na","mes":"Abril","jump_height":25.1,"rsi":0.4,"cpf_bm":21.7,"epp_bm":15.6,"pp_bm":42.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Franchesco Giardini","categoria":"9na","mes":"Abril","jump_height":31.5,"rsi":0.4,"cpf_bm":22.6,"epp_bm":18.3,"pp_bm":47.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Feliciano Alvarez","categoria":"9na","mes":"Abril","jump_height":33.0,"rsi":0.37,"cpf_bm":25.0,"epp_bm":22.3,"pp_bm":44.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Fausto Pratellesi","categoria":"9na","mes":"Abril","jump_height":26.5,"rsi":0.39,"cpf_bm":23.4,"epp_bm":20.6,"pp_bm":40.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Faustino Palavecino","categoria":"9na","mes":"Abril","jump_height":25.2,"rsi":0.34,"cpf_bm":22.2,"epp_bm":17.3,"pp_bm":43.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Facundo Ortiz","categoria":"9na","mes":"Abril","jump_height":30.1,"rsi":0.43,"cpf_bm":24.8,"epp_bm":10.0,"pp_bm":51.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Enzo Pereyra","categoria":"9na","mes":"Abril","jump_height":31.1,"rsi":0.45,"cpf_bm":22.9,"epp_bm":13.7,"pp_bm":48.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Benjamin Bravo","categoria":"9na","mes":"Abril","jump_height":29.0,"rsi":0.4,"cpf_bm":23.1,"epp_bm":17.5,"pp_bm":46.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bautista Eusebio","categoria":"9na","mes":"Abril","jump_height":33.2,"rsi":0.41,"cpf_bm":22.8,"epp_bm":21.9,"pp_bm":47.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bautista Flores","categoria":"9na","mes":"Abril","jump_height":27.7,"rsi":0.38,"cpf_bm":21.3,"epp_bm":17.1,"pp_bm":43.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bautista Castillo","categoria":"9na","mes":"Abril","jump_height":30.9,"rsi":0.41,"cpf_bm":25.4,"epp_bm":22.6,"pp_bm":44.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Antonio Guzman","categoria":"9na","mes":"Abril","jump_height":30.4,"rsi":0.42,"cpf_bm":22.7,"epp_bm":21.1,"pp_bm":45.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bastian Tito","categoria":"9na","mes":"Abril","jump_height":29.6,"rsi":0.39,"cpf_bm":23.8,"epp_bm":21.5,"pp_bm":46.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Agustin Resa","categoria":"9na","mes":"Abril","jump_height":38.6,"rsi":0.45,"cpf_bm":24.1,"epp_bm":16.7,"pp_bm":55.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Aliro Sawesuk","categoria":"9na","mes":"Abril","jump_height":32.4,"rsi":0.4,"cpf_bm":22.7,"epp_bm":19.3,"pp_bm":47.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Agustin Ponce","categoria":"9na","mes":"Abril","jump_height":31.2,"rsi":0.42,"cpf_bm":21.2,"epp_bm":17.6,"pp_bm":47.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Federico  Torres","categoria":"Proyeccion","mes":"Mayo","jump_height":39.0,"rsi":0.84,"cpf_bm":33.0,"epp_bm":32.5,"pp_bm":64.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tiziano De Stefano","categoria":"Proyeccion","mes":"Mayo","jump_height":43.2,"rsi":0.71,"cpf_bm":27.9,"epp_bm":27.4,"pp_bm":62.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Albert","categoria":"Proyeccion","mes":"Mayo","jump_height":38.6,"rsi":0.5,"cpf_bm":26.1,"epp_bm":26.0,"pp_bm":55.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Matias Dominguez","categoria":"Proyeccion","mes":"Mayo","jump_height":31.7,"rsi":0.52,"cpf_bm":26.4,"epp_bm":26.7,"pp_bm":44.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Martin Ubeda","categoria":"Proyeccion","mes":"Mayo","jump_height":39.6,"rsi":0.48,"cpf_bm":22.7,"epp_bm":22.5,"pp_bm":55.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luciano Videla","categoria":"Proyeccion","mes":"Mayo","jump_height":41.1,"rsi":0.6,"cpf_bm":26.8,"epp_bm":26.7,"pp_bm":61.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luciano Garay","categoria":"Proyeccion","mes":"Mayo","jump_height":40.5,"rsi":0.63,"cpf_bm":25.6,"epp_bm":25.7,"pp_bm":59.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luca Orellano","categoria":"Proyeccion","mes":"Mayo","jump_height":33.1,"rsi":0.45,"cpf_bm":23.5,"epp_bm":21.8,"pp_bm":49.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Mira","categoria":"Proyeccion","mes":"Mayo","jump_height":42.7,"rsi":0.68,"cpf_bm":31.6,"epp_bm":31.7,"pp_bm":56.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Julian Moya","categoria":"Proyeccion","mes":"Mayo","jump_height":44.0,"rsi":0.67,"cpf_bm":28.8,"epp_bm":28.8,"pp_bm":65.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Nallib","categoria":"Proyeccion","mes":"Mayo","jump_height":37.3,"rsi":0.49,"cpf_bm":23.2,"epp_bm":23.0,"pp_bm":52.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Josue Morales","categoria":"Proyeccion","mes":"Mayo","jump_height":38.8,"rsi":0.61,"cpf_bm":27.6,"epp_bm":27.7,"pp_bm":55.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Sabattini","categoria":"Proyeccion","mes":"Mayo","jump_height":37.4,"rsi":0.46,"cpf_bm":24.2,"epp_bm":24.2,"pp_bm":50.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Jerónimo Gutierrez","categoria":"Proyeccion","mes":"Mayo","jump_height":41.5,"rsi":0.58,"cpf_bm":27.0,"epp_bm":27.1,"pp_bm":55.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Zambudio","categoria":"Proyeccion","mes":"Mayo","jump_height":36.1,"rsi":0.53,"cpf_bm":24.9,"epp_bm":24.7,"pp_bm":50.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Genaro Giordani","categoria":"Proyeccion","mes":"Mayo","jump_height":42.0,"rsi":0.63,"cpf_bm":25.2,"epp_bm":25.7,"pp_bm":57.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Franco Boasso","categoria":"Proyeccion","mes":"Mayo","jump_height":35.1,"rsi":0.54,"cpf_bm":27.7,"epp_bm":26.4,"pp_bm":50.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"David Martini","categoria":"Proyeccion","mes":"Mayo","jump_height":43.6,"rsi":0.67,"cpf_bm":27.9,"epp_bm":27.9,"pp_bm":62.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Bautista Simunovic","categoria":"Proyeccion","mes":"Mayo","jump_height":38.7,"rsi":0.46,"cpf_bm":25.5,"epp_bm":20.0,"pp_bm":59.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Axel Ponce","categoria":"Proyeccion","mes":"Mayo","jump_height":39.8,"rsi":0.58,"cpf_bm":29.7,"epp_bm":30.0,"pp_bm":55.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Benjamin Iriart","categoria":"4ta","mes":"Mayo","jump_height":34.2,"rsi":0.59,"cpf_bm":29.3,"epp_bm":29.3,"pp_bm":51.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Diaz","categoria":"4ta","mes":"Mayo","jump_height":34.0,"rsi":0.51,"cpf_bm":24.9,"epp_bm":25.0,"pp_bm":51.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Diego Malara","categoria":"4ta","mes":"Mayo","jump_height":41.6,"rsi":0.59,"cpf_bm":26.9,"epp_bm":26.8,"pp_bm":59.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Rosales","categoria":"4ta","mes":"Mayo","jump_height":32.8,"rsi":0.54,"cpf_bm":26.8,"epp_bm":26.7,"pp_bm":48.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Matias Martinez","categoria":"4ta","mes":"Mayo","jump_height":41.6,"rsi":0.56,"cpf_bm":27.7,"epp_bm":27.7,"pp_bm":53.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Mariano Muñoz","categoria":"4ta","mes":"Mayo","jump_height":39.3,"rsi":0.62,"cpf_bm":27.7,"epp_bm":27.7,"pp_bm":55.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Valentino Abba","categoria":"4ta","mes":"Mayo","jump_height":46.3,"rsi":0.63,"cpf_bm":28.7,"epp_bm":27.0,"pp_bm":71.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Tiago Tello","categoria":"4ta","mes":"Mayo","jump_height":38.0,"rsi":0.54,"cpf_bm":26.8,"epp_bm":26.8,"pp_bm":54.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Reynoso","categoria":"4ta","mes":"Mayo","jump_height":34.4,"rsi":0.56,"cpf_bm":27.8,"epp_bm":27.3,"pp_bm":54.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Kevin Meza","categoria":"4ta","mes":"Mayo","jump_height":39.5,"rsi":0.58,"cpf_bm":28.0,"epp_bm":28.0,"pp_bm":59.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Maza","categoria":"4ta","mes":"Mayo","jump_height":34.5,"rsi":0.63,"cpf_bm":27.2,"epp_bm":27.3,"pp_bm":53.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ivo Olivero","categoria":"4ta","mes":"Mayo","jump_height":33.4,"rsi":0.5,"cpf_bm":25.6,"epp_bm":25.5,"pp_bm":51.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ismael Azcurra","categoria":"4ta","mes":"Mayo","jump_height":33.1,"rsi":0.5,"cpf_bm":26.9,"epp_bm":26.4,"pp_bm":53.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Geronimo Gutierrez","categoria":"4ta","mes":"Mayo","jump_height":40.0,"rsi":0.59,"cpf_bm":28.5,"epp_bm":28.5,"pp_bm":52.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Francesco Dicesare","categoria":"4ta","mes":"Mayo","jump_height":39.4,"rsi":0.65,"cpf_bm":29.7,"epp_bm":29.7,"pp_bm":59.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Esteban Sanchez","categoria":"4ta","mes":"Mayo","jump_height":36.4,"rsi":0.54,"cpf_bm":26.7,"epp_bm":25.2,"pp_bm":58.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Emiliano Mitriatti","categoria":"4ta","mes":"Mayo","jump_height":46.0,"rsi":0.64,"cpf_bm":28.8,"epp_bm":29.1,"pp_bm":65.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Cristobal Martos","categoria":"4ta","mes":"Mayo","jump_height":34.9,"rsi":0.66,"cpf_bm":31.0,"epp_bm":30.6,"pp_bm":56.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Aaron Vera","categoria":"4ta","mes":"Mayo","jump_height":34.5,"rsi":0.53,"cpf_bm":27.4,"epp_bm":25.7,"pp_bm":55.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Aaron Rodriguez","categoria":"4ta","mes":"Mayo","jump_height":34.7,"rsi":0.51,"cpf_bm":25.1,"epp_bm":23.6,"pp_bm":54.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Meritello","categoria":"Proyeccion","mes":"Mayo","jump_height":34.8,"rsi":0.46,"cpf_bm":22.7,"epp_bm":22.3,"pp_bm":50.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Francesco Speziale","categoria":"4ta","mes":"Mayo","jump_height":36.5,"rsi":0.7,"cpf_bm":31.3,"epp_bm":30.5,"pp_bm":60.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Morales","categoria":"4ta","mes":"Mayo","jump_height":35.6,"rsi":0.5,"cpf_bm":23.7,"epp_bm":23.4,"pp_bm":54.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Nicolas Casa","categoria":"4ta","mes":"Mayo","jump_height":49.0,"rsi":0.7,"cpf_bm":26.0,"epp_bm":23.9,"pp_bm":66.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joel Lopez","categoria":"4ta","mes":"Mayo","jump_height":33.2,"rsi":0.56,"cpf_bm":28.7,"epp_bm":21.8,"pp_bm":58.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Osuna","categoria":"4ta","mes":"Mayo","jump_height":35.9,"rsi":0.61,"cpf_bm":27.2,"epp_bm":27.2,"pp_bm":55.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Germán Diaz","categoria":"4ta","mes":"Mayo","jump_height":35.5,"rsi":0.54,"cpf_bm":24.2,"epp_bm":23.8,"pp_bm":53.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Obulgen","categoria":"1ra Local","mes":"Junio","jump_height":31.3,"rsi":0.47,"cpf_bm":22.0,"epp_bm":22.1,"pp_bm":44.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Verna","categoria":"1ra Local","mes":"Junio","jump_height":37.4,"rsi":0.48,"cpf_bm":22.5,"epp_bm":22.3,"pp_bm":52.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Cruz Castaño","categoria":"1ra Local","mes":"Junio","jump_height":40.0,"rsi":0.65,"cpf_bm":28.5,"epp_bm":28.5,"pp_bm":57.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Ignacio Cortez","categoria":"1ra Local","mes":"Junio","jump_height":43.0,"rsi":0.58,"cpf_bm":26.0,"epp_bm":26.1,"pp_bm":59.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Thiago Valdeomillo","categoria":"1ra Local","mes":"Junio","jump_height":39.8,"rsi":0.58,"cpf_bm":25.2,"epp_bm":23.3,"pp_bm":59.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Santino Puebla","categoria":"1ra Local","mes":"Junio","jump_height":33.7,"rsi":0.49,"cpf_bm":25.3,"epp_bm":25.4,"pp_bm":50.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Nicolas Reynoso","categoria":"1ra Local","mes":"Junio","jump_height":36.2,"rsi":0.58,"cpf_bm":26.3,"epp_bm":26.1,"pp_bm":55.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Matias Morichetti","categoria":"1ra Local","mes":"Junio","jump_height":33.6,"rsi":0.46,"cpf_bm":22.4,"epp_bm":21.5,"pp_bm":48.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Matias Mardini","categoria":"1ra Local","mes":"Junio","jump_height":37.9,"rsi":0.52,"cpf_bm":25.5,"epp_bm":25.5,"pp_bm":56.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luciano Sarmiento","categoria":"1ra Local","mes":"Junio","jump_height":42.0,"rsi":0.52,"cpf_bm":23.6,"epp_bm":23.6,"pp_bm":56.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lucas Arenas","categoria":"1ra Local","mes":"Junio","jump_height":42.2,"rsi":0.61,"cpf_bm":25.7,"epp_bm":25.6,"pp_bm":62.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Laureano Baigorria","categoria":"1ra Local","mes":"Junio","jump_height":35.6,"rsi":0.54,"cpf_bm":28.6,"epp_bm":28.7,"pp_bm":49.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Juan Pablo Arrieta","categoria":"1ra Local","mes":"Junio","jump_height":34.3,"rsi":0.48,"cpf_bm":24.6,"epp_bm":24.7,"pp_bm":50.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Jose Ortubia","categoria":"1ra Local","mes":"Junio","jump_height":35.4,"rsi":0.59,"cpf_bm":30.4,"epp_bm":30.1,"pp_bm":57.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Jeronimo Juarez","categoria":"1ra Local","mes":"Junio","jump_height":46.3,"rsi":0.74,"cpf_bm":26.3,"epp_bm":26.1,"pp_bm":66.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Jeremias Amaya","categoria":"1ra Local","mes":"Junio","jump_height":43.1,"rsi":0.63,"cpf_bm":24.2,"epp_bm":23.6,"pp_bm":61.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Figueroa","categoria":"1ra Local","mes":"Junio","jump_height":38.4,"rsi":0.6,"cpf_bm":26.2,"epp_bm":25.9,"pp_bm":54.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Ignacio Cohn","categoria":"1ra Local","mes":"Junio","jump_height":40.3,"rsi":0.61,"cpf_bm":25.3,"epp_bm":25.2,"pp_bm":58.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Giuliani Escudero","categoria":"1ra Local","mes":"Junio","jump_height":39.6,"rsi":0.66,"cpf_bm":27.0,"epp_bm":27.1,"pp_bm":58.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"German Garcia","categoria":"1ra Local","mes":"Junio","jump_height":34.7,"rsi":0.37,"cpf_bm":24.1,"epp_bm":17.9,"pp_bm":55.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Genaro Rigazzi","categoria":"1ra Local","mes":"Junio","jump_height":44.1,"rsi":0.76,"cpf_bm":30.7,"epp_bm":30.0,"pp_bm":66.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Genaro Garro","categoria":"1ra Local","mes":"Junio","jump_height":35.1,"rsi":0.49,"cpf_bm":24.5,"epp_bm":24.3,"pp_bm":51.9,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Franccesco Barroso","categoria":"1ra Local","mes":"Junio","jump_height":43.8,"rsi":0.63,"cpf_bm":24.2,"epp_bm":23.6,"pp_bm":63.6,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Alvaro Cadiz","categoria":"1ra Local","mes":"Junio","jump_height":39.1,"rsi":0.51,"cpf_bm":25.7,"epp_bm":23.7,"pp_bm":57.4,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Cristobal Martos","categoria":"Proyeccion","mes":"Julio","jump_height":36.6,"rsi":0.6,"cpf_bm":27.5,"epp_bm":27.6,"pp_bm":54.3,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Diaz","categoria":"Proyeccion","mes":"Julio","jump_height":33.2,"rsi":0.56,"cpf_bm":26.4,"epp_bm":26.0,"pp_bm":52.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lucas Arenas","categoria":"Proyeccion","mes":"Julio","jump_height":43.4,"rsi":0.65,"cpf_bm":27.4,"epp_bm":26.9,"pp_bm":65.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Federico  Torres","categoria":"Proyeccion","mes":"Julio","jump_height":35.8,"rsi":0.71,"cpf_bm":29.8,"epp_bm":28.5,"pp_bm":57.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luciano Garay","categoria":"Proyeccion","mes":"Julio","jump_height":41.2,"rsi":0.74,"cpf_bm":27.0,"epp_bm":26.1,"pp_bm":62.2,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luca Orellano","categoria":"Proyeccion","mes":"Julio","jump_height":35.8,"rsi":0.48,"cpf_bm":24.1,"epp_bm":23.1,"pp_bm":53.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Luciano Videla","categoria":"Proyeccion","mes":"Julio","jump_height":41.2,"rsi":0.64,"cpf_bm":27.5,"epp_bm":27.5,"pp_bm":60.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Matias Dominguez","categoria":"Proyeccion","mes":"Julio","jump_height":33.7,"rsi":0.57,"cpf_bm":27.2,"epp_bm":27.7,"pp_bm":48.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Mira","categoria":"Proyeccion","mes":"Julio","jump_height":43.7,"rsi":0.82,"cpf_bm":33.5,"epp_bm":33.6,"pp_bm":64.0,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Lautaro Diaz","categoria":"Proyeccion","mes":"Julio","jump_height":43.4,"rsi":0.67,"cpf_bm":26.8,"epp_bm":26.7,"pp_bm":61.8,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Joaquin Sabattini","categoria":"Proyeccion","mes":"Julio","jump_height":41.5,"rsi":0.57,"cpf_bm":26.0,"epp_bm":26.2,"pp_bm":56.7,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Franco Boasso","categoria":"Proyeccion","mes":"Julio","jump_height":35.2,"rsi":0.57,"cpf_bm":29.1,"epp_bm":28.8,"pp_bm":51.5,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null},{"jugador":"Axel Ponce","categoria":"Proyeccion","mes":"Julio","jump_height":42.0,"rsi":0.64,"cpf_bm":30.4,"epp_bm":30.7,"pp_bm":57.1,"stiff_asym":null,"cpf_asym":null,"epf_asym":null,"landrfd_asym":null,"eccdec_asym":null,"peakland_asym":null}];
+const CATS = ['9na','8va','7ma','6ta','5ta','4ta','Proyeccion','1ra Local'];
+const MESES = ['Todos','Abril','Mayo','Junio','Julio'];
+const METRICS = [
+  {key:'jump_height', label:'Jump Height', unit:'cm', desc:'Altura de salto — Impulso-Momento'},
+  {key:'rsi',        label:'RSI',         unit:'m/s', desc:'Reactive Strength Index modificado'},
+  {key:'cpf_bm',     label:'CPF / BM',    unit:'N/kg', desc:'Concentric Peak Force / Body Mass'},
+  {key:'epp_bm',     label:'EPP / BM',    unit:'W/kg', desc:'Eccentric Peak Power / Body Mass'},
+  {key:'pp_bm',      label:'Peak Power / BM', unit:'W/kg', desc:'Peak Power / Body Mass'},
+  {key:'asym',       label:'Asimetrías',  unit:'', desc:'Índices de asimetría bilateral'},
+];
+const ASYMS = [
+  {key:'asym_stiffness',    label:'Stiffness'},
+  {key:'asym_cpf',          label:'Concentric Peak Force'},
+  {key:'asym_epf',          label:'Eccentric Peak Force'},
+  {key:'asym_landing_rfd',  label:'Landing RFD'},
+  {key:'asym_ecc_dec_rfd',  label:'Eccentric Deceleration RFD'},
+  {key:'asym_peak_landing', label:'Peak Landing Force'},
+];
+
+let selCat = '5ta', selMes = 'Todos', activeTab = 0;
+
+function filtered() {
+  return DATA.filter(d => d.categoria === selCat && (selMes === 'Todos' || d.mes === selMes));
+}
+
+function avg(arr, key) {
+  const vals = arr.map(d => d[key]).filter(v => v != null);
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+}
+
+function render() {
+  // Category buttons
+  document.getElementById('catBtns').innerHTML = CATS.map(c =>
+    '<button class="cat-btn' + (c===selCat?' active':'') + '" data-cat="' + c + '">' + c + '</button>'
+  ).join('');
+
+  // Mes buttons
+  const rows = DATA.filter(d => d.categoria === selCat);
+  const mesesDisp = MESES.filter(m => m==='Todos' || rows.some(d=>d.mes===m));
+  document.getElementById('mesBtns').innerHTML = mesesDisp.map(m =>
+    '<button class="mes-btn' + (m===selMes?' active':'') + '" data-mes="' + m + '">' + m + '</button>'
+  ).join('');
+
+  const f = filtered();
+
+  // Update header badges
+  document.getElementById('hdr-jugadores').textContent = new Set(f.map(d=>d.jugador)).size;
+  document.getElementById('hdr-mes').textContent = selMes;
+
+  // Stat cards
+  const cards = [
+    {label:'JUGADORES', val: new Set(f.map(d=>d.jugador)).size, unit:''},
+    {label:'JUMP HEIGHT (CM)', val: avg(f,'jump_height'), unit:''},
+    {label:'RSI (M/S)', val: avg(f,'rsi'), unit:''},
+    {label:'CPF / BM (N/KG)', val: avg(f,'cpf_bm'), unit:''},
+    {label:'PEAK POWER (W/KG)', val: avg(f,'pp_bm'), unit:''},
+  ];
+  document.getElementById('statCards').innerHTML = cards.map(c =>
+    '<div class="stat-card"><div class="val">' + (c.val!=null?parseFloat(c.val.toFixed(1)):'-') + '</div><div class="lbl">' + c.label + '</div></div>'
+  ).join('');
+
+  // Tabs
+  document.getElementById('tabs').innerHTML = METRICS.map((m,i) =>
+    '<div class="tab' + (i===activeTab?' active':'') + '" onclick="activeTab=' + i + ';render()">' + m.label + '</div>'
+  ).join('') + '<div class="tab comp-tab' + (activeTab===-1?' active':'') + '" onclick="activeTab=-1;render()">⚡ Comparativo</div>';
+
+  renderContent(f);
+}
+
+function renderContent(f) {
+  const el = document.getElementById('content');
+  if (activeTab === -1) { renderComparativo(el); return; }
+  const m = METRICS[activeTab];
+  if (m.key === 'asym') { renderAsym(f, el); return; }
+  renderMetric(f, m, el);
+}
+
+function renderMetric(f, m, el) {
+  const players = {};
+  f.forEach(d => {
+    if (d[m.key] == null) return;
+    const key = d.jugador;
+    if (!players[key] || d[m.key] > players[key].val)
+      players[key] = {name: d.jugador, val: d[m.key], mes: d.mes};
+  });
+  const list = Object.values(players).sort((a,b) => b.val - a.val);
+  const mean = list.length ? list.reduce((s,p)=>s+p.val,0)/list.length : null;
+
+  if (!list.length) { el.innerHTML='<div class="empty">Sin datos para esta selección</div>'; return; }
+
+  let html = '<div class="metric-header">';
+  html += '<div class="clr">';
+  if (mean!=null) html += '<div class="avg-banner">' + mean.toFixed(1) + '<small>PROMEDIO ' + m.unit.toUpperCase() + '</small></div>';
+  html += '<h2>' + m.label + ' <span>' + m.unit + '</span></h2>';
+  html += '<p>' + m.desc + '</p>';
+  html += '<div class="metric-meta"><span><span class="meta-dot"></span>' + (selMes==='Todos'?'Todos los meses':selMes) + '</span><span>' + list.length + ' jugadores</span></div>';
+  html += '</div></div>';
+
+  html += '<table><thead><tr><th>#</th><th>Jugador</th><th>Mes</th><th>' + m.label + '</th><th>VS Promedio</th><th>Diferencia</th></tr></thead><tbody>';
+  list.forEach((p,i) => {
+    const pct = mean ? ((p.val - mean)/mean*100) : 0;
+    const up = pct >= 1, dn = pct <= -1;
+    const barW = Math.min(Math.abs(pct)/30*100, 100);
+    const badge = up ? '<span class="b-up">+'+pct.toFixed(1)+'%</span>' : dn ? '<span class="b-dn">'+pct.toFixed(1)+'%</span>' : '<span class="b-neu">~0%</span>';
+    const bar = up ? '<div class="bar-wrap"><div class="bar-up" style="width:'+barW+'%"></div></div>' : dn ? '<div class="bar-wrap"><div class="bar-dn" style="width:'+barW+'%"></div></div>' : '<div class="bar-wrap"></div>';
+    html += '<tr><td class="rank">'+(i+1)+'</td><td class="jugador-name'+(i<3?' top':'')+'">'+p.name+'</td><td class="mes-badge">'+p.mes+'</td><td class="metric-val">'+p.val.toFixed(1)+'</td><td>'+bar+'</td><td>'+badge+'</td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function renderAsym(f, el) {
+  let html = '<div class="metric-header"><h2>Asimetrías</h2><p>Semáforo: verde &lt;10% · amarillo 10-15% · rojo &gt;15%</p></div>';
+
+  const players = [...new Set(f.map(d=>d.jugador))].sort();
+  if (!players.length) { el.innerHTML='<div class="empty">Sin datos</div>'; return; }
+
+  html += '<table><thead><tr><th>Jugador</th>';
+  ASYMS.forEach(a => html += '<th>'+a.label+'</th>');
+  html += '</tr></thead><tbody>';
+
+  players.forEach(name => {
+    const rows = f.filter(d=>d.jugador===name);
+    const best = {};
+    ASYMS.forEach(a => {
+      const vals = rows.map(d=>d[a.key]).filter(v=>v!=null);
+      if (vals.length) best[a.key] = vals.reduce((b,v)=>v.value<b.value?v:b);
+    });
+    html += '<tr><td class="jugador-name" style="font-size:12px">'+name+'</td>';
+    ASYMS.forEach(a => {
+      const v = best[a.key];
+      if (!v) { html += '<td class="mes-badge">-</td>'; return; }
+      const p = v.value;
+      const fc = p < 10 ? 'a-low' : p <= 15 ? 'a-mid' : 'a-hi';
+      const vc = p < 10 ? 'av-low' : p <= 15 ? 'av-mid' : 'av-hi';
+      html += '<td><div style="display:flex;align-items:center;gap:4px">';
+      html += '<div class="asym-bar-wrap" style="width:60px"><div class="asym-fill '+fc+'" style="width:'+Math.min(p/30*100,100)+'%"></div></div>';
+      html += '<span class="asym-v '+vc+'">'+p.toFixed(1)+'%</span>';
+      html += '<span class="asym-s s'+v.side+'">'+v.side+'</span>';
+      html += '</div></td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+
+// ============================================================
+// COMPARATIVO
+// ============================================================
+var compJugador = null, compMes1 = null, compMes2 = null;
+
+function renderComparativo(el) {
+  var mesOrder = ['Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var catData = DATA.filter(function(d){ return d.categoria === selCat; });
+  var players = Array.from(new Set(catData.map(function(d){ return d.jugador; }))).sort();
+  var meses = Array.from(new Set(catData.map(function(d){ return d.mes; }))).sort(function(a,b){ return mesOrder.indexOf(a)-mesOrder.indexOf(b); });
+
+  // Default selections
+  if (!compJugador || players.indexOf(compJugador)<0) compJugador = players[0]||null;
+  if (!compMes1 || meses.indexOf(compMes1)<0) compMes1 = meses[0]||null;
+  if (!compMes2 || meses.indexOf(compMes2)<0) compMes2 = meses.length>1 ? meses[meses.length-1] : (meses[0]||null);
+
+  // Build selectors
+  var html = '<div class="comp-controls">';
+  html += '<div class="comp-ctrl"><label>Jugador</label><select id="comp-jug">';
+  players.forEach(function(p){ html += '<option value="'+p+'"'+(p===compJugador?' selected':'')+'>'+p+'</option>'; });
+  html += '</select></div>';
+  html += '<div class="comp-ctrl"><label>Evaluación 1</label><select id="comp-mes1">';
+  meses.forEach(function(m){ html += '<option value="'+m+'"'+(m===compMes1?' selected':'')+'>'+m+'</option>'; });
+  html += '</select></div>';
+  html += '<div class="comp-ctrl"><label>Evaluación 2</label><select id="comp-mes2">';
+  meses.forEach(function(m){ html += '<option value="'+m+'"'+(m===compMes2?' selected':'')+'>'+m+'</option>'; });
+  html += '</select></div>';
+  html += '</div>';
+
+  if (!compJugador || !compMes1 || !compMes2) {
+    el.innerHTML = html + '<div class="empty">Sin datos disponibles</div>';
+    attachCompEvents(); return;
+  }
+
+  var d1 = catData.find(function(d){ return d.jugador===compJugador && d.mes===compMes1; });
+  var d2 = catData.find(function(d){ return d.jugador===compJugador && d.mes===compMes2; });
+
+  // Header
+  html += '<div class="comp-header">';
+  html += '<span class="comp-mes1-lbl">'+compMes1+'</span>';
+  html += '<span style="color:#aaa">→</span>';
+  html += '<span class="comp-mes2-lbl">'+compMes2+'</span>';
+  html += '<span style="color:#aaa;font-size:14px;margin-left:auto;font-weight:400">'+compJugador+'</span>';
+  html += '</div>';
+
+  if (!d1 && !d2) {
+    el.innerHTML = html + '<div class="empty">No hay datos para '+compJugador+' en ninguna de las fechas seleccionadas</div>';
+    attachCompEvents(); return;
+  }
+
+  var COMP_METRICS = [
+    {key:'jump_height',  label:'Jump Height',       unit:'cm',   higherBetter:true},
+    {key:'rsi',          label:'RSI',               unit:'m/s',  higherBetter:true},
+    {key:'cpf_bm',       label:'CPF / BM',          unit:'N/kg', higherBetter:true},
+    {key:'epp_bm',       label:'EPP / BM',          unit:'W/kg', higherBetter:true},
+    {key:'pp_bm',        label:'Peak Power / BM',   unit:'W/kg', higherBetter:true},
+    {key:'stiff_asym',   label:'Asim. Stiffness',   unit:'%',    higherBetter:false},
+    {key:'cpf_asym',     label:'Asim. CPF',         unit:'%',    higherBetter:false},
+    {key:'epf_asym',     label:'Asim. EPF',         unit:'%',    higherBetter:false},
+    {key:'landrfd_asym', label:'Asim. Landing RFD', unit:'%',    higherBetter:false},
+    {key:'eccdec_asym',  label:'Asim. Ecc Dec RFD', unit:'%',    higherBetter:false},
+    {key:'peakland_asym',label:'Asim. Peak Landing', unit:'%',   higherBetter:false},
+  ];
+
+  html += '<table class="comp-table"><thead><tr>';
+  html += '<th>Métrica</th>';
+  html += '<th style="color:#4fc3f7">'+compMes1+'</th>';
+  html += '<th style="color:#81c784">'+compMes2+'</th>';
+  html += '<th style="text-align:center"></th>';
+  html += '<th>Cambio</th>';
+  html += '</tr></thead><tbody>';
+
+  COMP_METRICS.forEach(function(m) {
+    var v1 = d1 ? d1[m.key] : null;
+    var v2 = d2 ? d2[m.key] : null;
+    if (v1 == null && v2 == null) return;
+    var hasChange = v1 != null && v2 != null;
+    var pct = hasChange ? ((v2 - v1) / Math.abs(v1) * 100) : null;
+    var neutral = hasChange && Math.abs(pct) < 1;
+    var improved = hasChange && !neutral && (m.higherBetter ? pct > 0 : pct < 0);
+    var worsened = hasChange && !neutral && !improved;
+    var pctClass = neutral ? 'b-neu' : improved ? 'b-up' : 'b-dn';
+    var arrow = neutral ? '→' : improved ? '↑' : '↓';
+    var arrowColor = neutral ? '#aaa' : improved ? '#66bb6a' : '#ef5350';
+    html += '<tr>';
+    html += '<td class="comp-metric-name">'+m.label+' <small>'+m.unit+'</small></td>';
+    html += '<td class="comp-v1">'+(v1!=null?v1.toFixed(2):'—')+'</td>';
+    html += '<td class="comp-v2">'+(v2!=null?v2.toFixed(2):'—')+'</td>';
+    html += '<td class="comp-arrow-cell" style="color:'+arrowColor+'">'+( hasChange ? arrow : '' )+'</td>';
+    if (hasChange) {
+      html += '<td><span class="'+pctClass+'">'+(pct>0?'+':'')+pct.toFixed(1)+'%</span></td>';
+    } else {
+      html += '<td style="color:#aaa;font-size:12px">sin dato</td>';
+    }
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  el.innerHTML = html;
+  attachCompEvents();
+}
+
+function attachCompEvents() {
+  var jug = document.getElementById('comp-jug');
+  var m1  = document.getElementById('comp-mes1');
+  var m2  = document.getElementById('comp-mes2');
+  if (jug) jug.addEventListener('change', function(){ compJugador=this.value; renderComparativo(document.getElementById('content')); });
+  if (m1)  m1.addEventListener('change',  function(){ compMes1=this.value;    renderComparativo(document.getElementById('content')); });
+  if (m2)  m2.addEventListener('change',  function(){ compMes2=this.value;    renderComparativo(document.getElementById('content')); });
+}
+
+render();
+
+// Event delegation - avoids quote issues in onclick attributes
+document.getElementById('catBtns').addEventListener('click', function(e) {
+  var t = e.target.closest('button');
+  if (t && t.dataset.cat) { selCat = t.dataset.cat; selMes = 'Todos'; activeTab = 0; render(); }
+});
+document.getElementById('mesBtns').addEventListener('click', function(e) {
+  var t = e.target.closest('button');
+  if (t && t.dataset.mes) { selMes = t.dataset.mes; render(); }
+});
+</script>
+</body>
+</html>
