@@ -3,5 +3,10 @@
     "title": "Dashboard Físico – Equipo de Fútbol",
     "file": "dashboards/dashboard_fisico_movil.html",
     "date": "2026-07-07"
+  },
+  {
+    "title": "Dashboard CMJ Juveniles 2026 · GYE",
+    "file": "dashboards/dashboard-cmj-juveniles-2026.html",
+    "date": "2026-07-07"
   }
 ]
