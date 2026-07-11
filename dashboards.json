@@ -8,5 +8,10 @@
     "title": "Dashboard CMJ Juveniles 2026 · GYE",
     "file": "dashboards/dashboard-cmj-juveniles-2026.html",
     "date": "2026-07-07"
+  },
+  {
+    "title": "Carga Semana 6 – Jugadores de Campo",
+    "file": "dashboards/reporte_carga_semana6.html",
+    "date": "2026-07-13"
   }
 ]
