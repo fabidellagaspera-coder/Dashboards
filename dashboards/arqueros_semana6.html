@@ -49,6 +49,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .comp-bar-bg{height:48px;background:#e8e8e8;border-radius:4px;display:flex;align-items:flex-end;overflow:hidden}
 .comp-bar-fill{width:100%;border-radius:4px 4px 0 0}
 .comp-bar-val{font-size:8px;font-weight:700;margin-top:2px}
+.legend-row{display:flex;gap:10px;font-size:10px;font-weight:600;margin-bottom:8px;flex-wrap:wrap}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -61,6 +63,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- TAB: INDIVIDUAL -->
 <div class="tab-pane active" id="tab-individual">
   <div class="gk-pills">
     <button class="gk-pill active" onclick="switchGK('rig',this)">Rigamonti</button>
@@ -82,40 +85,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<div class="tab-pane" id="tab-atajadas">
+<!-- TAB: CAÍDAS Y SALTOS -->
+<div class="tab-pane" id="tab-intervenciones">
   <div class="gk-pills">
-    <button class="gk-pill active" onclick="switchGKAtaj('rig',this)">Rigamonti</button>
-    <button class="gk-pill" onclick="switchGKAtaj('pet',this)">Petruchi</button>
-    <button class="gk-pill" onclick="switchGKAtaj('rog',this)">Roggero</button>
+    <button class="gk-pill active" onclick="switchGKInt('rig',this)">Rigamonti</button>
+    <button class="gk-pill" onclick="switchGKInt('pet',this)">Petruchi</button>
+    <button class="gk-pill" onclick="switchGKInt('rog',this)">Roggero</button>
   </div>
-  <p style="font-size:11px;color:#888;margin:-6px 0 12px 2px">Dive · caídas del arquero al lado izquierdo, centro o derecho.</p>
+
+  <div class="section-title" style="margin-top:0">Caídas por sesión</div>
+  <div class="legend-row">
+    <span><span class="legend-dot" style="background:#4a90d9"></span>Izquierda</span>
+    <span><span class="legend-dot" style="background:#e86b3a"></span>Centro</span>
+    <span><span class="legend-dot" style="background:#c8102e"></span>Derecha</span>
+  </div>
   <div class="chart-card">
-    <div class="chart-title">Dive por sesión</div>
+    <div class="chart-title">Caídas (Izq / Cen / Der)</div>
     <div class="chart-wrap"><canvas id="chartDives"></canvas></div>
   </div>
   <div class="chart-card">
-    <div class="chart-title">Carga de dive por sesión</div>
+    <div class="chart-title">Carga de caídas por sesión</div>
     <div class="chart-wrap"><canvas id="chartLoad"></canvas></div>
   </div>
-  <div class="section-title">Distribución total</div>
-  <div id="diveBreakdown"></div>
-</div>
+  <div id="diveKpis" class="kpi-grid" style="margin-bottom:14px"></div>
 
-<div class="tab-pane" id="tab-saltos">
-  <div class="gk-pills">
-    <button class="gk-pill active" onclick="switchGKSaltos('rig',this)">Rigamonti</button>
-    <button class="gk-pill" onclick="switchGKSaltos('pet',this)">Petruchi</button>
-    <button class="gk-pill" onclick="switchGKSaltos('rog',this)">Roggero</button>
+  <div class="section-title">Saltos IMA por sesión</div>
+  <div class="legend-row">
+    <span><span class="legend-dot" style="background:#27ae60"></span>High (&gt;40cm)</span>
+    <span><span class="legend-dot" style="background:#f39c12"></span>Med (20–40cm)</span>
+    <span><span class="legend-dot" style="background:#95a5a6"></span>Low (0–20cm)</span>
   </div>
-  <p style="font-size:11px;color:#888;margin:-6px 0 12px 2px">IMA (saltos) · Low 0–20cm · Med 20–40cm · High &gt;40cm.</p>
   <div class="chart-card">
-    <div class="chart-title">Saltos por sesión</div>
+    <div class="chart-title">Saltos IMA (Low / Med / High)</div>
     <div class="chart-wrap"><canvas id="chartJumps"></canvas></div>
   </div>
-  <div class="section-title">Distribución total</div>
-  <div id="jumpBreakdown"></div>
+  <div id="jumpKpis" class="kpi-grid" style="margin-bottom:14px"></div>
 </div>
 
+<!-- TAB: COMPARAR -->
 <div class="tab-pane" id="tab-comp">
   <div class="section-title" style="margin-top:0">Comparar S6 vs S5</div>
   <div class="metric-pills" id="compPills"></div>
@@ -124,8 +131,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <nav class="tabs">
   <button class="tab-btn active" onclick="showTab('individual',this)">Individual</button>
-  <button class="tab-btn" onclick="showTab('atajadas',this)">Dive</button>
-  <button class="tab-btn" onclick="showTab('saltos',this)">Saltos</button>
+  <button class="tab-btn" onclick="showTab('intervenciones',this)">Caídas y Saltos</button>
   <button class="tab-btn" onclick="showTab('comp',this)">Comparar</button>
 </nav>
 
@@ -147,10 +153,10 @@ var gks={
     dec:   [5,2,2,17,2,3],
     expEff:[27,7,12,55,18,3],
     rhie:  [9,7,10,13,6,6],
-    imaLow: [12, 0, 1, 1, 1, 1],
-    imaMed: [5, 1, 14, 0, 2, 1],
-    imaHigh:[4, 0, 0, 0, 2, 1],
-    s5:{dist:13085,diveL:51,diveC:22,diveR:31,loadL:354,loadC:123,loadR:243,acc:17,dec:15,expEff:72,rhie:37}
+    jumpH: [4,0,0,0,2,1],
+    jumpM: [5,1,14,0,2,1],
+    jumpL: [12,0,1,1,1,1],
+    s5:{dist:13085,diveL:51,diveC:22,diveR:31,loadL:354,loadC:123,loadR:243,acc:17,dec:15,expEff:72,rhie:37,jumpH:20,jumpM:50,jumpL:46}
   },
   pet:{
     name:'Lautaro Petruchi',
@@ -165,10 +171,10 @@ var gks={
     dec:   [6,4,6,15,5,19],
     expEff:[41,6,27,19,20,50],
     rhie:  [9,11,13,14,7,23],
-    imaLow: [8, 4, 2, 6, 1, 5],
-    imaMed: [1, 1, 20, 0, 2, 9],
-    imaHigh:[4, 0, 4, 0, 3, 0],
-    s5:{dist:11453,diveL:38,diveC:21,diveR:43,loadL:339,loadC:164,loadR:376,acc:25,dec:20,expEff:100,rhie:58}
+    jumpH: [4,0,4,0,3,0],
+    jumpM: [1,4,20,0,2,9],
+    jumpL: [8,1,2,6,1,5],
+    s5:{dist:11453,diveL:38,diveC:21,diveR:43,loadL:339,loadC:164,loadR:376,acc:25,dec:20,expEff:100,rhie:58,jumpH:11,jumpM:70,jumpL:64}
   },
   rog:{
     name:'Santiago Roggero',
@@ -183,10 +189,10 @@ var gks={
     dec:   [10,6,3,21,3,12],
     expEff:[38,7,33,19,16,28],
     rhie:  [10,14,16,15,8,12],
-    imaLow: [12, 6, 3, 2, 1, 6],
-    imaMed: [7, 2, 22, 1, 4, 12],
-    imaHigh:[2, 0, 6, 1, 3, 1],
-    s5:{dist:14241,diveL:80,diveC:35,diveR:94,loadL:724,loadC:234,loadR:895,acc:58,dec:50,expEff:218,rhie:103}
+    jumpH: [2,0,6,1,3,1],
+    jumpM: [7,2,22,1,4,12],
+    jumpL: [12,6,3,2,4,6],
+    s5:{dist:14241,diveL:80,diveC:35,diveR:94,loadL:724,loadC:234,loadR:895,acc:58,dec:50,expEff:218,rhie:103,jumpH:14,jumpM:96,jumpL:57}
   }
 };
 
@@ -196,14 +202,14 @@ var chartInstances={};
 function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();chartInstances[id]=null;}}
 
 var currentGK='rig';
-var currentGKAtaj='rig';
-var currentGKSaltos='rig';
+var currentGKInt='rig';
 var activeComp='dist';
 
 var compMetrics=[
   {key:'dist',   label:'Distancia', fmt:function(v){return (v/1000).toFixed(1);}, unit:' km'},
-  {key:'dives',  label:'Dive',      fmt:function(v){return v;}, unit:''},
-  {key:'load',   label:'Carga',     fmt:function(v){return v;}, unit:''},
+  {key:'dives',  label:'Caídas',    fmt:function(v){return v;}, unit:''},
+  {key:'load',   label:'Carga Caídas', fmt:function(v){return v;}, unit:''},
+  {key:'jumps',  label:'Saltos IMA',fmt:function(v){return v;}, unit:''},
   {key:'expEff', label:'Explosivos',fmt:function(v){return v;}, unit:''},
   {key:'rhie',   label:'RHIE',      fmt:function(v){return v;}, unit:''},
   {key:'acc',    label:'Acc',       fmt:function(v){return v;}, unit:''},
@@ -213,6 +219,7 @@ var compMetrics=[
 function getGKVal(gk,key){
   if(key==='dives') return sum(gk.diveL)+sum(gk.diveC)+sum(gk.diveR);
   if(key==='load')  return sum(gk.loadL)+sum(gk.loadC)+sum(gk.loadR);
+  if(key==='jumps') return sum(gk.jumpH)+sum(gk.jumpM)+sum(gk.jumpL);
   if(key==='dist')  return sum(gk.dist);
   return sum(gk[key]);
 }
@@ -220,6 +227,7 @@ function getS5Val(gk,key){
   if(!gk.s5) return null;
   if(key==='dives') return gk.s5.diveL+gk.s5.diveC+gk.s5.diveR;
   if(key==='load')  return gk.s5.loadL+gk.s5.loadC+gk.s5.loadR;
+  if(key==='jumps') return gk.s5.jumpH+gk.s5.jumpM+gk.s5.jumpL;
   return gk.s5[key];
 }
 
@@ -239,10 +247,9 @@ function showTab(id,btn){
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='individual') renderIndividual(currentGK);
-  if(id==='atajadas')   renderAtajadas(currentGKAtaj);
-  if(id==='saltos')     renderSaltos(currentGKSaltos);
-  if(id==='comp')       renderComp();
+  if(id==='individual')     renderIndividual(currentGK);
+  if(id==='intervenciones') renderIntervenciones(currentGKInt);
+  if(id==='comp')           renderComp();
 }
 
 function switchGK(key,btn){
@@ -251,18 +258,11 @@ function switchGK(key,btn){
   btn.classList.add('active');
   renderIndividual(key);
 }
-function switchGKAtaj(key,btn){
-  currentGKAtaj=key;
-  document.querySelectorAll('#tab-atajadas .gk-pill').forEach(function(b){b.classList.remove('active');});
+function switchGKInt(key,btn){
+  currentGKInt=key;
+  document.querySelectorAll('#tab-intervenciones .gk-pill').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
-  renderAtajadas(key);
-}
-
-function switchGKSaltos(key,btn){
-  currentGKSaltos=key;
-  document.querySelectorAll('#tab-saltos .gk-pill').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  renderSaltos(key);
+  renderIntervenciones(key);
 }
 
 function renderIndividual(key){
@@ -275,7 +275,7 @@ function renderIndividual(key){
   var expPct=g.s5?((totalExp-g.s5.expEff)/g.s5.expEff*100):null;
 
   function deltaHtml(pct){
-    if(pct===null) return '<div class="kpi-delta" style="color:#aaa">Sin S5 ref</div>';
+    if(pct===null) return '';
     var color=pct>=0?'#27ae60':'#e74c3c';
     var arrow=pct>=0?'▲':'▼';
     var sign=pct>=0?'+':'';
@@ -288,9 +288,7 @@ function renderIndividual(key){
     '<div class="kpi-card"><div class="kpi-label">RHIE Total</div><div class="kpi-val">'+totalRhie+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">Acc + Dec >2.5</div><div class="kpi-val">'+totalAcc+'</div></div>';
 
-  destroyChart('chartDist');
-  destroyChart('chartExp');
-  destroyChart('chartRhie');
+  destroyChart('chartDist'); destroyChart('chartExp'); destroyChart('chartRhie');
 
   chartInstances['chartDist']=new Chart(document.getElementById('chartDist'),{
     type:'bar',data:{labels:ses,datasets:[{data:g.dist,backgroundColor:RED,borderRadius:4}]},options:chartOpts(' m')
@@ -303,20 +301,20 @@ function renderIndividual(key){
   });
 }
 
-function renderAtajadas(key){
+function renderIntervenciones(key){
   var g=gks[key];
   var loadPerSes=ses.map(function(_,i){return g.loadL[i]+g.loadC[i]+g.loadR[i];});
   var totL=sum(g.diveL),totC=sum(g.diveC),totR=sum(g.diveR);
   var totLoad=sum(g.loadL)+sum(g.loadC)+sum(g.loadR);
+  var totJH=sum(g.jumpH),totJM=sum(g.jumpM),totJL=sum(g.jumpL);
 
-  destroyChart('chartDives');
-  destroyChart('chartLoad');
+  destroyChart('chartDives'); destroyChart('chartLoad'); destroyChart('chartJumps');
 
   chartInstances['chartDives']=new Chart(document.getElementById('chartDives'),{
     type:'bar',data:{labels:ses,datasets:[
-      {label:'Izq',data:g.diveL,backgroundColor:'#4a90d9',borderRadius:3},
-      {label:'Cen',data:g.diveC,backgroundColor:'#e86b3a',borderRadius:3},
-      {label:'Der',data:g.diveR,backgroundColor:RED,borderRadius:3}
+      {label:'Izquierda',data:g.diveL,backgroundColor:'#4a90d9',borderRadius:3},
+      {label:'Centro',   data:g.diveC,backgroundColor:'#e86b3a',borderRadius:3},
+      {label:'Derecha',  data:g.diveR,backgroundColor:RED,borderRadius:3}
     ]},options:{
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:true,position:'bottom',labels:{font:{size:9},boxWidth:10,padding:8}}},
@@ -326,28 +324,11 @@ function renderAtajadas(key){
   chartInstances['chartLoad']=new Chart(document.getElementById('chartLoad'),{
     type:'bar',data:{labels:ses,datasets:[{data:loadPerSes,backgroundColor:'#4a90d9',borderRadius:4}]},options:chartOpts('')
   });
-
-  document.getElementById('diveBreakdown').innerHTML=
-    '<div class="kpi-grid">'+
-    '<div class="kpi-card"><div class="kpi-label">Total atajadas</div><div class="kpi-val">'+(totL+totC+totR)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label">Carga total</div><div class="kpi-val">'+totLoad+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label" style="color:#4a90d9">Izquierda</div><div class="kpi-val" style="color:#4a90d9">'+totL+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label" style="color:#e86b3a">Centro</div><div class="kpi-val" style="color:#e86b3a">'+totC+'</div></div>'+
-    '</div>'+
-    '<div class="kpi-card" style="margin-bottom:8px"><div class="kpi-label" style="color:'+RED+'">Derecha</div><div class="kpi-val" style="color:'+RED+'">'+totR+'</div></div>';
-}
-
-function renderSaltos(key){
-  var g=gks[key];
-  var totLow=sum(g.imaLow),totMed=sum(g.imaMed),totHigh=sum(g.imaHigh);
-
-  destroyChart('chartJumps');
-
   chartInstances['chartJumps']=new Chart(document.getElementById('chartJumps'),{
     type:'bar',data:{labels:ses,datasets:[
-      {label:'Low',data:g.imaLow,backgroundColor:'#4a90d9',borderRadius:3},
-      {label:'Med',data:g.imaMed,backgroundColor:'#e86b3a',borderRadius:3},
-      {label:'High',data:g.imaHigh,backgroundColor:RED,borderRadius:3}
+      {label:'High (>40cm)',  data:g.jumpH,backgroundColor:'#27ae60',borderRadius:3},
+      {label:'Med (20-40cm)',data:g.jumpM,backgroundColor:'#f39c12',borderRadius:3},
+      {label:'Low (0-20cm)', data:g.jumpL,backgroundColor:'#95a5a6',borderRadius:3}
     ]},options:{
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:true,position:'bottom',labels:{font:{size:9},boxWidth:10,padding:8}}},
@@ -355,13 +336,17 @@ function renderSaltos(key){
     }
   });
 
-  document.getElementById('jumpBreakdown').innerHTML=
-    '<div class="kpi-grid">'+
-    '<div class="kpi-card"><div class="kpi-label">Total saltos</div><div class="kpi-val">'+(totLow+totMed+totHigh)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label" style="color:#4a90d9">Low (0–20cm)</div><div class="kpi-val" style="color:#4a90d9">'+totLow+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label" style="color:#e86b3a">Med (20–40cm)</div><div class="kpi-val" style="color:#e86b3a">'+totMed+'</div></div>'+
-    '</div>'+
-    '<div class="kpi-card" style="margin-bottom:8px"><div class="kpi-label" style="color:'+RED+'">High (&gt;40cm)</div><div class="kpi-val" style="color:'+RED+'">'+totHigh+'</div></div>';
+  document.getElementById('diveKpis').innerHTML=
+    '<div class="kpi-card"><div class="kpi-label" style="color:#4a90d9">Izquierda</div><div class="kpi-val" style="color:#4a90d9">'+totL+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label" style="color:#e86b3a">Centro</div><div class="kpi-val" style="color:#e86b3a">'+totC+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label" style="color:'+RED+'">Derecha</div><div class="kpi-val" style="color:'+RED+'">'+totR+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">Carga total</div><div class="kpi-val">'+totLoad+'</div></div>';
+
+  document.getElementById('jumpKpis').innerHTML=
+    '<div class="kpi-card"><div class="kpi-label" style="color:#27ae60">High &gt;40cm</div><div class="kpi-val" style="color:#27ae60">'+totJH+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label" style="color:#f39c12">Med 20–40cm</div><div class="kpi-val" style="color:#f39c12">'+totJM+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label" style="color:#95a5a6">Low 0–20cm</div><div class="kpi-val" style="color:#95a5a6">'+totJL+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">Total saltos</div><div class="kpi-val">'+(totJH+totJM+totJL)+'</div></div>';
 }
 
 function buildCompPills(){
