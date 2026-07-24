@@ -23,5 +23,10 @@
     "title": "C.Semana1",
     "file": "dashboards/reporte_carga_clausura_s1.html",
     "date": "2026-07-23"
+  },
+  {
+    "title": "Carga Clausura Semana 1 – Arqueros",
+    "file": "dashboards/arqueros_clausura_s1.html",
+    "date": "2026-07-23"
   }
 ]
