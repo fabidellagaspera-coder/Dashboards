@@ -28,5 +28,10 @@
     "title": "Carga Clausura Semana 1 – Arqueros",
     "file": "dashboards/arqueros_clausura_s1.html",
     "date": "2026-07-23"
+  },
+  {
+    "title": "Reporte carga semanal Vs Union",
+    "file": "dashboards/reporte_carga_semana_union.html",
+    "date": "2026-07-31"
   }
 ]
