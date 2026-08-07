@@ -1,37 +1,42 @@
 [
-  {
-    "title": "Dashboard Físico – Equipo de Fútbol",
-    "file": "dashboards/dashboard_fisico_movil.html",
-    "date": "2026-07-07"
-  },
-  {
-    "title": "Dashboard CMJ Juveniles 2026 · GYE",
-    "file": "dashboards/dashboard-cmj-juveniles-2026.html",
-    "date": "2026-07-07"
-  },
-  {
-    "title": "Carga Semana 6 – Jugadores de Campo",
-    "file": "dashboards/reporte_carga_semana6.html",
-    "date": "2026-07-13"
-  },
-  {
-    "title": "Carga Semana 6 – Arqueros",
-    "file": "dashboards/arqueros_semana6.html",
-    "date": "2026-07-13"
-  },
-  {
-    "title": "C.Semana1",
-    "file": "dashboards/reporte_carga_clausura_s1.html",
-    "date": "2026-07-23"
-  },
-  {
-    "title": "Carga Clausura Semana 1 – Arqueros",
-    "file": "dashboards/arqueros_clausura_s1.html",
-    "date": "2026-07-23"
-  },
-  {
-    "title": "Reporte carga semanal Vs Union",
-    "file": "dashboards/reporte_carga_semana_union.html",
-    "date": "2026-07-31"
-  }
+    {
+          "title": "Dashboard Físico – Equipo de Fútbol",
+          "file": "dashboards/dashboard_fisico_movil.html",
+          "date": "2026-07-07"
+    },
+    {
+          "title": "Dashboard CMJ Juveniles 2026 · GYE",
+          "file": "dashboards/dashboard-cmj-juveniles-2026.html",
+          "date": "2026-07-07"
+    },
+    {
+          "title": "Carga Semana 6 – Jugadores de Campo",
+          "file": "dashboards/reporte_carga_semana6.html",
+          "date": "2026-07-13"
+    },
+    {
+          "title": "Carga Semana 6 – Arqueros",
+          "file": "dashboards/arqueros_semana6.html",
+          "date": "2026-07-13"
+    },
+    {
+          "title": "C.Semana1",
+          "file": "dashboards/reporte_carga_clausura_s1.html",
+          "date": "2026-07-23"
+    },
+    {
+          "title": "Carga Clausura Semana 1 – Arqueros",
+          "file": "dashboards/arqueros_clausura_s1.html",
+          "date": "2026-07-23"
+    },
+    {
+          "title": "Reporte carga semanal Vs Union",
+          "file": "dashboards/reporte_carga_semana_union.html",
+          "date": "2026-07-31"
+    },
+    {
+          "title": "Carga Semana vs Instituto – Jugadores de Campo",
+          "file": "dashboards/reporte_carga_semana_instituto.html",
+          "date": "2026-08-07"
+    }
 ]
