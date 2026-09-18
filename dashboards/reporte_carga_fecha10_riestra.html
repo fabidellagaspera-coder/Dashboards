@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Carga Fecha 10 vs RIESTRA</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #F0F0EE;
+    color: #252523;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: #252523;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .logo-wrap {
+    width: 40px; height: 40px;
+    background: #fff;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    padding: 2px;
+  }
+  .logo-wrap svg { width: 34px; height: 34px; }
+  .header-text h1 { font-size: 15px; font-weight: 700; color: #fff; }
+  .header-text p  { font-size: 11px; color: #9A9A95; margin-top: 2px; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: #1a1a19;
+    border-bottom: 1px solid #3D3D3A;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .tab {
+    flex: 1; padding: 9px 4px; text-align: center;
+    font-size: 12px; font-weight: 600; color: #6C6C68;
+    cursor: pointer; border-bottom: 3px solid transparent;
+    transition: all 0.18s;
+  }
+  .tab.active { color: #C42430; border-bottom-color: #C42430; }
+
+  /* ── PANELS ── */
+  .panel { display: none; padding: 12px; }
+  .panel.active { display: block; }
+
+  /* ── ALERT BOX ── */
+  .alert-box {
+    background: #FFF8E6;
+    border-left: 4px solid #E8A020;
+    border-radius: 8px;
+    padding: 11px 13px;
+    margin-bottom: 12px;
+  }
+  .alert-box .alert-title {
+    font-size: 12px; font-weight: 700; color: #C42430;
+    margin-bottom: 5px;
+  }
+  .alert-box .alert-row {
+    font-size: 11.5px; color: #3D3D3A;
+    font-weight: 600; line-height: 1.7;
+  }
+  .alert-box .alert-row span { color: #6C6C68; font-weight: 400; }
+
+  /* ── SORT PILLS ── */
+  .pill-bar {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .pill {
+    padding: 6px 12px; font-size: 11.5px; border-radius: 20px;
+    border: none; background: #DEDEDA; color: #3D3D3A;
+    cursor: pointer; font-weight: 600; transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .pill.active { background: #C42430; color: #fff; }
+
+  /* ── PLAYER CARD ── */
+  .player-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px 10px;
+    margin-bottom: 8px;
+    border: 1px solid #E9E9E6;
+  }
+  .player-card.absent { opacity: 0.45; }
+  .card-top {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 4px;
+  }
+  .player-name {
+    font-size: 12px; font-weight: 700; color: #6C6C68;
+    letter-spacing: 0.4px; text-transform: uppercase;
+  }
+  .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .badge-red  { background: #FFF0F0; color: #C42430; }
+  .badge-gray { background: #E9E9E6; color: #9A9A95; }
+
+  .card-value {
+    display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;
+  }
+  .val-num { font-size: 26px; font-weight: 800; color: #252523; line-height: 1; }
+  .val-unit { font-size: 13px; color: #9A9A95; font-weight: 500; }
+  .val-sec  { font-size: 12px; color: #B8B8B3; margin-left: 8px; }
+
+  /* Progress bar */
+  .bar-track {
+    height: 5px; background: #EDEDEB; border-radius: 3px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; background: #C42430; border-radius: 3px;
+    transition: width 0.35s ease;
+  }
+
+  /* ── EQUIPO TAB ── */
+  .section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #9A9A95; margin: 14px 0 8px;
+  }
+  .section-label:first-child { margin-top: 0; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 4px; }
+  .kpi {
+    background: #fff; border-radius: 10px; padding: 11px 8px;
+    text-align: center; border: 1px solid #E9E9E6;
+  }
+  .kpi .val { font-size: 20px; font-weight: 800; color: #C42430; line-height: 1; }
+  .kpi .lbl { font-size: 10px; color: #9A9A95; margin-top: 3px; }
+  .sess-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .sess-pill {
+    padding: 5px 11px; font-size: 11px; border-radius: 20px;
+    border: none; background: #DEDEDA; color: #3D3D3A;
+    cursor: pointer; font-weight: 600; transition: all 0.18s;
+  }
+  .sess-pill.active { background: #C42430; color: #fff; }
+  .chart-card {
+    background: #fff; border-radius: 10px; padding: 13px;
+    margin-bottom: 10px; border: 1px solid #E9E9E6;
+  }
+  .chart-card h3 {
+    font-size: 11px; font-weight: 700; color: #9A9A95;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  }
+  .chart-wrap { position: relative; height: 150px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-wrap">
+    <svg viewBox="0 0 100 118" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="bc">
+          <path d="M4,28 L96,28 L96,76 Q96,102 50,116 Q4,102 4,76 Z"/>
+        </clipPath>
+      </defs>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="#111"/>
+      <rect x="4" y="4" width="92" height="24" fill="#fff" stroke="#111" stroke-width="1.5"/>
+      <text x="50" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif"
+            font-size="10" font-weight="900" fill="#111" letter-spacing="0.3">G Y E 1908</text>
+      <g clip-path="url(#bc)">
+        <rect x="16" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="43" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="70" y="28" width="14" height="92" fill="#fff"/>
+      </g>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z"
+            fill="none" stroke="#111" stroke-width="3"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Carga Fecha 10 vs RIESTRA</h1>
+    <p>Clausura Fecha 10 | Lun 14/9 – Vie 18/9</p>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showPanel('eq')">Equipo</div>
+  <div class="tab" onclick="showPanel('jug')">Jugadores</div>
+  <div class="tab" onclick="showPanel('vel')">Velocidades</div>
+</div>
+
+<!-- ══════════ PANEL EQUIPO ══════════ -->
+<div id="panel-eq" class="panel active">
+
+  <div class="alert-box">
+    <div class="alert-title">⚠ Sin datos GPS completos</div>
+    <div class="alert-row">MUÑOZ <span>— falta Lun 14/9 y Mar 15/9</span></div>
+    <div class="alert-row">ANTONINI <span>— solo Vie 18/9</span></div>
+    <div class="alert-row">O'CONNOR <span>— falta Lun 14/9 y Vie 18/9</span></div>
+    <div class="alert-row">GONZALEZ <span>— solo Lun 14/9</span></div>
+    <div class="alert-row">LENCIONI / PATRITTI <span>— sin datos GPS</span></div>
+  </div>
+
+  <div class="section-label">Sesión — promedio grupal</div>
+  <div class="sess-bar">
+    <button class="sess-pill active" onclick="setEqSess(0,this)">Lun 14/9</button>
+    <button class="sess-pill" onclick="setEqSess(1,this)">Mar 15/9</button>
+    <button class="sess-pill" onclick="setEqSess(2,this)">Mié 16/9</button>
+    <button class="sess-pill" onclick="setEqSess(3,this)">Jue 17/9</button>
+    <button class="sess-pill" onclick="setEqSess(4,this)">Vie 18/9</button>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="val" id="k-dist">—</div><div class="lbl">Dist (m)</div></div>
+    <div class="kpi"><div class="val" id="k-hsr">—</div><div class="lbl">HSR (m)</div></div>
+    <div class="kpi"><div class="val" id="k-b6">—</div><div class="lbl">Sprint (m)</div></div>
+    <div class="kpi"><div class="val" id="k-b5">—</div><div class="lbl">Alta Vel</div></div>
+    <div class="kpi"><div class="val" id="k-acc">—</div><div class="lbl">ACC >3</div></div>
+    <div class="kpi"><div class="val" id="k-dec">—</div><div class="lbl">DEC >3</div></div>
+  </div>
+
+  <div class="section-label">Evolución semanal</div>
+
+  <div class="chart-card">
+    <h3>Distancia Total (m)</h3>
+    <div class="chart-wrap"><canvas id="cd"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>HSR + Sprint (m)</h3>
+    <div class="chart-wrap"><canvas id="ch"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>ACC / DEC >3 m/s²</h3>
+    <div class="chart-wrap"><canvas id="ca"></canvas></div>
+  </div>
+</div>
+
+<!-- ══════════ PANEL JUGADORES ══════════ -->
+<div id="panel-jug" class="panel">
+  <div class="pill-bar">
+    <button class="pill active" onclick="sortJug('dist',this)">Dist Total</button>
+    <button class="pill" onclick="sortJug('hsr',this)">HSR</button>
+    <button class="pill" onclick="sortJug('b5',this)">B5</button>
+    <button class="pill" onclick="sortJug('b6',this)">B6</button>
+    <button class="pill" onclick="sortJug('acc3',this)">Acc >3</button>
+    <button class="pill" onclick="sortJug('dec3',this)">Dec >3</button>
+  </div>
+  <div id="cards-jug"></div>
+</div>
+
+<!-- ══════════ PANEL VELOCIDADES ══════════ -->
+<div id="panel-vel" class="panel">
+  <div class="pill-bar">
+    <button class="pill active" onclick="sortVel('spmax',this)">Sprint Max</button>
+    <button class="pill" onclick="sortVel('b6',this)">B6</button>
+    <button class="pill" onclick="sortVel('b5',this)">B5</button>
+    <button class="pill" onclick="sortVel('hsr',this)">HSR</button>
+  </div>
+  <div id="cards-vel"></div>
+</div>
+
+<script>
+/* ── DATA ── */
+const SESS = ['Lun 14/9','Mar 15/9','Mié 16/9','Jue 17/9','Vie 18/9'];
+const eq = {
+  dist:[3728,4090,5316,1477,1709],
+  b5:  [50,153,310,3,41],
+  b6:  [0,15,75,2,4],
+  hsr: [50,169,394,5,44],
+  acc3:[9,15,15,1,6],
+  dec3:[11,17,14,1,3]
+};
+const jug = [
+  {n:'MÓDICA',    dist:17597,b5:427,b6:85, hsr:512, spmax:28.3,acc3:44,dec3:49,gps:null},
+  {n:'ARMOA',     dist:16706,b5:634,b6:148,hsr:782, spmax:29.0,acc3:51,dec3:62,gps:null},
+  {n:'ANDRADA',   dist:16763,b5:808,b6:283,hsr:1091,spmax:29.2,acc3:48,dec3:60,gps:null},
+  {n:'MONDINO',   dist:14245,b5:105,b6:13, hsr:118, spmax:25.3,acc3:22,dec3:15,gps:null},
+  {n:'FERNANDEZ', dist:16019,b5:567,b6:72, hsr:640, spmax:27.0,acc3:44,dec3:46,gps:null},
+  {n:'MUÑOZ',     dist:8792, b5:141,b6:0,  hsr:141, spmax:22.5,acc3:10,dec3:3, gps:'Falta Lun+Mar'},
+  {n:'LENCIONI',  dist:0,    b5:0,  b6:0,  hsr:0,   spmax:0,   acc3:0, dec3:0, gps:null},
+  {n:'ANTONINI',  dist:2331, b5:0,  b6:0,  hsr:0,   spmax:16.8,acc3:0, dec3:0, gps:'Solo Vie 18/9'},
+  {n:'GUIFFREY',  dist:15336,b5:305,b6:78, hsr:383, spmax:26.5,acc3:46,dec3:35,gps:null},
+  {n:'PATRITTI',  dist:0,    b5:0,  b6:0,  hsr:0,   spmax:0,   acc3:0, dec3:0, gps:null},
+  {n:'SABATINI',  dist:11897,b5:355,b6:48, hsr:403, spmax:27.5,acc3:27,dec3:22,gps:null},
+  {n:'GONZALEZ',  dist:2295, b5:736,b6:0,  hsr:736, spmax:21.8,acc3:2, dec3:0, gps:'Solo Lun 14/9'},
+  {n:'CORTEZ',    dist:17268,b5:462,b6:78, hsr:631, spmax:30.5,acc3:59,dec3:83,gps:null},
+  {n:'FRANCO',    dist:17011,b5:648,b6:69, hsr:717, spmax:26.6,acc3:47,dec3:61,gps:null},
+  {n:'CEBALLOS',  dist:16467,b5:696,b6:128,hsr:824, spmax:29.9,acc3:61,dec3:68,gps:null},
+  {n:'CARRERA',   dist:16953,b5:451,b6:101,hsr:551, spmax:27.6,acc3:31,dec3:38,gps:null},
+  {n:'CINGOLANI', dist:14072,b5:587,b6:144,hsr:730, spmax:30.6,acc3:76,dec3:44,gps:null},
+  {n:'PAREDES',   dist:16284,b5:583,b6:224,hsr:806, spmax:30.3,acc3:60,dec3:51,gps:null},
+  {n:'RECALDE',   dist:16191,b5:535,b6:82, hsr:676, spmax:29.1,acc3:45,dec3:58,gps:null},
+  {n:'VARGAS',    dist:15650,b5:363,b6:55, hsr:418, spmax:29.0,acc3:31,dec3:27,gps:null},
+  {n:'BARBOZA',   dist:19210,b5:417,b6:89, hsr:541, spmax:27.8,acc3:52,dec3:40,gps:null},
+  {n:'ROMANO',    dist:19526,b5:784,b6:134,hsr:964, spmax:30.5,acc3:62,dec3:48,gps:null},
+  {n:'RODRIGUEZ', dist:17591,b5:603,b6:111,hsr:714, spmax:28.0,acc3:52,dec3:65,gps:null},
+  {n:'ORTIZ',     dist:18627,b5:672,b6:39, hsr:712, spmax:26.8,acc3:56,dec3:39,gps:null},
+  {n:"O'CONNOR",  dist:9720, b5:743,b6:73, hsr:816, spmax:28.6,acc3:27,dec3:24,gps:'Falta Lun+Vie'},
+  {n:'SANCHEZ',   dist:13349,b5:468,b6:32, hsr:501, spmax:27.0,acc3:47,dec3:44,gps:null},
+  {n:'SIMONI',    dist:17616,b5:722,b6:68, hsr:790, spmax:28.4,acc3:78,dec3:67,gps:null},
+];
+
+/* ── PANELS ── */
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.tab')[{eq:0,jug:1,vel:2}[id]].classList.add('active');
+}
+
+/* ── KPIs ── */
+function fmtK(n){ return n>=1000?(n/1000).toFixed(1)+'k':String(n); }
+function fmtEU(n){ return n.toLocaleString('de'); } // e.g. 19.526
+function updateKpis(i){
+  document.getElementById('k-dist').textContent=fmtK(eq.dist[i]);
+  document.getElementById('k-hsr').textContent=fmtK(eq.hsr[i]);
+  document.getElementById('k-b6').textContent=fmtK(eq.b6[i]);
+  document.getElementById('k-b5').textContent=fmtK(eq.b5[i]);
+  document.getElementById('k-acc').textContent=eq.acc3[i];
+  document.getElementById('k-dec').textContent=eq.dec3[i];
+}
+function setEqSess(i,btn){
+  btn.closest('.sess-bar').querySelectorAll('.sess-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateKpis(i);
+}
+updateKpis(0);
+
+/* ── CHARTS ── */
+const RED='#C42430',REDT='rgba(196,36,48,0.13)',REDS='rgba(196,36,48,0.6)';
+const GRN='#5B8C6E',GRNS='rgba(91,140,110,0.6)';
+const GR='#9A9A95',GRT='rgba(154,154,149,0.15)';
+const TICK={color:'#B8B8B3',font:{size:10}};
+const GRID={color:'#EDEDEB'};
+const BASE={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+  scales:{x:{ticks:TICK,grid:GRID},y:{ticks:TICK,grid:GRID}}};
+const LEG={...BASE,plugins:{legend:{display:true,labels:{color:'#6C6C68',font:{size:10},boxWidth:10}}}};
+
+new Chart(document.getElementById('cd'),{type:'bar',data:{labels:SESS,datasets:[
+  {data:eq.dist,backgroundColor:REDT,borderColor:RED,borderWidth:2,borderRadius:5}
+]},options:BASE});
+new Chart(document.getElementById('ch'),{type:'bar',data:{labels:SESS,datasets:[
+  {label:'HSR',data:eq.hsr,backgroundColor:REDS,borderColor:RED,borderWidth:1,borderRadius:5},
+  {label:'Sprint',data:eq.b6,backgroundColor:GRNS,borderColor:GRN,borderWidth:1,borderRadius:5}
+]},options:LEG});
+new Chart(document.getElementById('ca'),{type:'line',data:{labels:SESS,datasets:[
+  {label:'ACC',data:eq.acc3,borderColor:RED,backgroundColor:REDT,tension:0.3,pointRadius:4,pointBackgroundColor:RED},
+  {label:'DEC',data:eq.dec3,borderColor:GR,backgroundColor:GRT,tension:0.3,pointRadius:4,pointBackgroundColor:GR}
+]},options:LEG});
+
+/* ── CARDS ── */
+const UNIT={dist:'m',hsr:'m',b5:'m',b6:'m',spmax:'km/h',acc3:'',dec3:''};
+const LABEL={dist:'Dist Total',hsr:'HSR',b5:'B5',b6:'B6',spmax:'Sprint Max',acc3:'Acc >3',dec3:'Dec >3'};
+
+function fmtVal(key,val){
+  if(val===0) return '0';
+  if(key==='spmax') return val.toFixed(1);
+  // European thousands separator
+  return val.toLocaleString('de');
+}
+
+function renderCards(cid, arr, hlKey){
+  const maxVal = Math.max(...arr.filter(p=>!(p.dist===0&&p.spmax===0)).map(p=>p[hlKey]||0));
+  const c=document.getElementById(cid);
+  c.innerHTML='';
+  arr.forEach(p=>{
+    const absent=p.dist===0&&p.spmax===0;
+    const badge=absent
+      ?'<span class="badge badge-gray">Sin GPS</span>'
+      :(p.gps?`<span class="badge badge-red">${p.gps}</span>`:'');
+    const val=p[hlKey]||0;
+    const pct=maxVal>0?Math.round((val/maxVal)*100):0;
+    const unit=UNIT[hlKey];
+    const d=document.createElement('div');
+    d.className='player-card'+(absent?' absent':'');
+    d.innerHTML=`
+      <div class="card-top">
+        <span class="player-name">${p.n}</span>${badge}
+      </div>
+      <div class="card-value">
+        <span class="val-num">${fmtVal(hlKey,val)}</span>
+        ${unit?`<span class="val-unit">${unit}</span>`:''}
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${absent?0:pct}%"></div></div>`;
+    c.appendChild(d);
+  });
+}
+
+function sortJug(key,btn){
+  btn.closest('.pill-bar').querySelectorAll('.pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards('cards-jug',[...jug].sort((a,b)=>b[key]-a[key]),key);
+}
+function sortVel(key,btn){
+  btn.closest('.pill-bar').querySelectorAll('.pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards('cards-vel',[...jug].sort((a,b)=>b[key]-a[key]),key);
+}
+
+renderCards('cards-jug',[...jug].sort((a,b)=>b.dist-a.dist),'dist');
+renderCards('cards-vel',[...jug].sort((a,b)=>b.spmax-a.spmax),'spmax');
+</script>
+</body>
+</html>
