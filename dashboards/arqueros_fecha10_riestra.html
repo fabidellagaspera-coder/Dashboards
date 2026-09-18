@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Arqueros Fecha 10 vs RIESTRA</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #F0F0EE;
+    color: #252523;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: #252523;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .logo-wrap {
+    width: 40px; height: 40px;
+    background: #fff;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    padding: 2px;
+  }
+  .logo-wrap svg { width: 34px; height: 34px; }
+  .header-text h1 { font-size: 15px; font-weight: 700; color: #fff; }
+  .header-text p  { font-size: 11px; color: #9A9A95; margin-top: 2px; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: #1a1a19;
+    border-bottom: 1px solid #3D3D3A;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .tab {
+    flex: 1; padding: 9px 4px; text-align: center;
+    font-size: 12px; font-weight: 600; color: #6C6C68;
+    cursor: pointer; border-bottom: 3px solid transparent;
+    transition: all 0.18s;
+  }
+  .tab.active { color: #C42430; border-bottom-color: #C42430; }
+
+  /* PANELS */
+  .panel { display: none; padding: 12px; }
+  .panel.active { display: block; }
+
+  /* ALERT */
+  .alert-box {
+    background: #FFF8E6;
+    border-left: 4px solid #E8A020;
+    border-radius: 8px;
+    padding: 11px 13px;
+    margin-bottom: 12px;
+  }
+  .alert-box .at { font-size: 12px; font-weight: 700; color: #C42430; margin-bottom: 5px; }
+  .alert-box .ar { font-size: 11.5px; color: #3D3D3A; font-weight: 600; line-height: 1.7; }
+  .alert-box .ar span { color: #6C6C68; font-weight: 400; }
+
+  /* SECTION LABEL */
+  .slabel {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #9A9A95; margin: 14px 0 8px;
+  }
+  .slabel:first-child { margin-top: 0; }
+
+  /* PILLS */
+  .pill-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill {
+    padding: 6px 12px; font-size: 11.5px; border-radius: 20px;
+    border: none; background: #DEDEDA; color: #3D3D3A;
+    cursor: pointer; font-weight: 600; transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .pill.active { background: #C42430; color: #fff; }
+
+  /* CHART CARD */
+  .chart-card {
+    background: #fff; border-radius: 10px; padding: 13px;
+    margin-bottom: 10px; border: 1px solid #E9E9E6;
+  }
+  .chart-card h3 {
+    font-size: 11px; font-weight: 700; color: #9A9A95;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  }
+  .chart-wrap { position: relative; height: 150px; }
+  .chart-wrap-sm { position: relative; height: 120px; }
+
+  /* COMPARISON CARD */
+  .cmp-card {
+    background: #fff; border-radius: 10px; padding: 13px 14px;
+    margin-bottom: 8px; border: 1px solid #E9E9E6;
+  }
+  .cmp-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: #9A9A95; margin-bottom: 10px;
+  }
+  .cmp-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+  }
+  .cmp-name { font-size: 11px; font-weight: 700; color: #252523; width: 80px; flex-shrink: 0; }
+  .cmp-bar-wrap { flex: 1; height: 6px; background: #EDEDEB; border-radius: 3px; overflow: hidden; }
+  .cmp-bar { height: 100%; border-radius: 3px; transition: width 0.35s ease; }
+  .bar-r { background: #C42430; }
+  .bar-p { background: #3D3D3A; }
+  .cmp-val { font-size: 12px; font-weight: 700; color: #252523; width: 48px; text-align: right; flex-shrink: 0; }
+  .cmp-badge { font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 600; margin-left: 4px; }
+  .cmp-badge-r { background: #FFF0F0; color: #C42430; }
+  .cmp-badge-d { background: #E9E9E6; color: #3D3D3A; }
+
+  /* SESSION DETAIL CARD */
+  .sess-card {
+    background: #fff; border-radius: 10px; padding: 13px 14px;
+    margin-bottom: 8px; border: 1px solid #E9E9E6;
+  }
+  .sess-player-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: #252523;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .absent-tag { font-size: 10px; color: #9A9A95; font-weight: 400; }
+  .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .metric-item { text-align: center; }
+  .metric-item .mv {
+    font-size: 18px; font-weight: 800; color: #252523; line-height: 1;
+  }
+  .metric-item .ml { font-size: 9px; color: #B8B8B3; margin-top: 2px; }
+  .divider { height: 1px; background: #F0F0EE; margin: 10px 0; }
+
+  /* DIVE CARD */
+  .dive-card {
+    background: #fff; border-radius: 10px; padding: 13px 14px;
+    margin-bottom: 8px; border: 1px solid #E9E9E6;
+  }
+  .dive-header {
+    font-size: 12px; font-weight: 700; color: #252523; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .dive-header .total-badge {
+    font-size: 11px; font-weight: 600; color: #C42430;
+    background: #FFF0F0; padding: 2px 9px; border-radius: 10px;
+  }
+  .dir-row {
+    display: grid; grid-template-columns: 36px 1fr 44px; align-items: center; gap: 6px; margin-bottom: 6px;
+  }
+  .dir-lbl { font-size: 11px; font-weight: 700; color: #6C6C68; }
+  .dir-bar-wrap { height: 8px; background: #EDEDEB; border-radius: 4px; overflow: hidden; }
+  .dir-bar { height: 100%; border-radius: 4px; }
+  .dir-L { background: #C42430; }
+  .dir-C { background: #E8A020; }
+  .dir-R { background: #3182bd; }
+  .dir-val { font-size: 11px; font-weight: 700; color: #252523; text-align: right; }
+  .sub-label { font-size: 10px; color: #9A9A95; margin: 8px 0 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #6C6C68; font-weight: 600; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-wrap">
+    <svg viewBox="0 0 100 118" xmlns="http://www.w3.org/2000/svg">
+      <defs><clipPath id="bc"><path d="M4,28 L96,28 L96,76 Q96,102 50,116 Q4,102 4,76 Z"/></clipPath></defs>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="#111"/>
+      <rect x="4" y="4" width="92" height="24" fill="#fff" stroke="#111" stroke-width="1.5"/>
+      <text x="50" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-size="10" font-weight="900" fill="#111" letter-spacing="0.3">G Y E 1908</text>
+      <g clip-path="url(#bc)">
+        <rect x="16" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="43" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="70" y="28" width="14" height="92" fill="#fff"/>
+      </g>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="none" stroke="#111" stroke-width="3"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Arqueros – Fecha 10 vs RIESTRA</h1>
+    <p>Clausura Fecha 10 | Lun 14/9 – Vie 18/9</p>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showPanel('sem')">Semana</div>
+  <div class="tab" onclick="showPanel('ses')">Sesiones</div>
+  <div class="tab" onclick="showPanel('div')">Diving</div>
+</div>
+
+<!-- ════════ PANEL SEMANA ════════ -->
+<div id="panel-sem" class="panel active">
+
+  <div class="alert-box">
+    <div class="at">⚠ Sin datos GPS completos</div>
+    <div class="ar">RIGAMONTI <span>— falta Jue 17/9</span></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#C42430"></div>RIGAMONTI</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3D3D3A"></div>PETRUCHI</div>
+  </div>
+
+  <div id="cmp-cards"></div>
+
+  <p class="slabel">Distancia por sesión</p>
+  <div class="chart-card">
+    <h3>Distancia Total (m)</h3>
+    <div class="chart-wrap"><canvas id="ch-dist"></canvas></div>
+  </div>
+
+  <p class="slabel">Carga de trabajo</p>
+  <div class="chart-card">
+    <h3>Esfuerzos Explosivos</h3>
+    <div class="chart-wrap"><canvas id="ch-exp"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>RHIE (Esfuerzos Repetidos Alta Intensidad)</h3>
+    <div class="chart-wrap"><canvas id="ch-rhie"></canvas></div>
+  </div>
+</div>
+
+<!-- ════════ PANEL SESIONES ════════ -->
+<div id="panel-ses" class="panel">
+  <div class="pill-bar">
+    <button class="pill active" onclick="showSess(0,this)">Lun 14/9</button>
+    <button class="pill" onclick="showSess(1,this)">Mar 15/9</button>
+    <button class="pill" onclick="showSess(2,this)">Mié 16/9</button>
+    <button class="pill" onclick="showSess(3,this)">Jue 17/9</button>
+    <button class="pill" onclick="showSess(4,this)">Vie 18/9</button>
+  </div>
+  <div id="sess-cards"></div>
+</div>
+
+<!-- ════════ PANEL DIVING ════════ -->
+<div id="panel-div" class="panel">
+  <div id="dive-cards"></div>
+
+  <p class="slabel">Saltos totales por sesión</p>
+  <div class="chart-card">
+    <h3>Cantidad de saltos</h3>
+    <div class="chart-wrap"><canvas id="ch-dives"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Carga total de saltos</h3>
+    <div class="chart-wrap"><canvas id="ch-load"></canvas></div>
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const SESS = ['Lun 14/9','Mar 15/9','Mié 16/9','Jue 17/9','Vie 18/9'];
+
+const arqs = [
+  {
+    n:'RIGAMONTI', gps:'Falta Jue 17/9',
+    dist:7233, dives:73, dives_L:33, dives_C:17, dives_R:23,
+    load:523,  load_L:249, load_C:98, load_R:176,
+    acc:29, dec:20, jumps:60, jumps_H:18, jumps_M:31, jumps_L:11,
+    explosive:57, RHIE:28,
+    s_dist:     [1085, 2849, 2439,  0,  860],
+    s_dives:    [  26,   22,   14,  0,   11],
+    s_load:     [ 172,  192,   91,  0,   68],
+    s_acc:      [   0,   20,    6,  0,    3],
+    s_dec:      [   0,   13,    4,  0,    3],
+    s_jumps:    [   4,   24,   19,  0,   13],
+    s_explosive:[  17,   22,   13,  0,    5],
+    s_RHIE:     [   5,   11,   11,  0,    1],
+  },
+  {
+    n:'PETRUCHI', gps:null,
+    dist:8933, dives:87, dives_L:30, dives_C:26, dives_R:31,
+    load:775,  load_L:272, load_C:195, load_R:308,
+    acc:26, dec:25, jumps:79, jumps_H:9, jumps_M:42, jumps_L:28,
+    explosive:96, RHIE:44,
+    s_dist:     [ 957, 2575, 2855, 1082, 1464],
+    s_dives:    [  23,   21,   19,    0,   24],
+    s_load:     [ 207,  220,  166,    0,  182],
+    s_acc:      [   1,   15,    3,    0,    7],
+    s_dec:      [   1,   13,   10,    0,    1],
+    s_jumps:    [  10,   25,   17,    1,   26],
+    s_explosive:[  21,   25,   24,    4,   22],
+    s_RHIE:     [   9,   17,   11,    2,    5],
+  }
+];
+
+const COLORS = ['#C42430','#3D3D3A'];
+const COLORS_T = ['rgba(196,36,48,0.18)','rgba(61,61,58,0.18)'];
+
+/* ── PANELS ── */
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.tab')[{sem:0,ses:1,div:2}[id]].classList.add('active');
+}
+
+/* ── COMPARISON CARDS (Semana) ── */
+const CMP_METRICS = [
+  {key:'dist',     lbl:'Distancia Total', unit:'m', fmt: v=>v.toLocaleString('de')},
+  {key:'dives',    lbl:'Saltos Totales',  unit:'',  fmt: v=>v},
+  {key:'load',     lbl:'Carga Saltos',    unit:'',  fmt: v=>v},
+  {key:'explosive',lbl:'Esf. Explosivos', unit:'',  fmt: v=>v},
+  {key:'RHIE',     lbl:'RHIE',            unit:'',  fmt: v=>v},
+  {key:'jumps',    lbl:'Saltos Totales',  unit:'',  fmt: v=>v},
+  {key:'acc',      lbl:'Acc >2,5 m/s²',  unit:'',  fmt: v=>v},
+  {key:'dec',      lbl:'Dec >2,5 m/s²',  unit:'',  fmt: v=>v},
+];
+
+function buildCmpCards(){
+  const c=document.getElementById('cmp-cards');
+  CMP_METRICS.forEach(m=>{
+    const vals=arqs.map(a=>a[m.key]);
+    const mx=Math.max(...vals);
+    const card=document.createElement('div');
+    card.className='cmp-card';
+    let html=`<div class="cmp-title">${m.lbl}</div>`;
+    arqs.forEach((a,i)=>{
+      const pct=mx>0?Math.round((vals[i]/mx)*100):0;
+      const isMax=vals[i]===mx;
+      html+=`
+        <div class="cmp-row">
+          <span class="cmp-name">${a.n}</span>
+          <div class="cmp-bar-wrap"><div class="cmp-bar ${i===0?'bar-r':'bar-p'}" style="width:${pct}%"></div></div>
+          <span class="cmp-val">${m.fmt(vals[i])}${m.unit?' '+m.unit:''}</span>
+          ${isMax?`<span class="cmp-badge ${i===0?'cmp-badge-r':'cmp-badge-d'}">▲</span>`:''}
+        </div>`;
+    });
+    card.innerHTML=html;
+    c.appendChild(card);
+  });
+}
+buildCmpCards();
+
+/* ── CHARTS (Semana) ── */
+const TICK={color:'#B8B8B3',font:{size:10}};
+const GRID={color:'#EDEDEB'};
+const BASE={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:true,labels:{color:'#6C6C68',font:{size:10},boxWidth:10}}},
+  scales:{x:{ticks:TICK,grid:GRID},y:{ticks:TICK,grid:GRID}}};
+
+new Chart(document.getElementById('ch-dist'),{type:'bar',data:{labels:SESS,datasets:
+  arqs.map((a,i)=>({label:a.n,data:a.s_dist,backgroundColor:COLORS_T[i],borderColor:COLORS[i],borderWidth:2,borderRadius:4}))
+},options:BASE});
+
+new Chart(document.getElementById('ch-exp'),{type:'bar',data:{labels:SESS,datasets:
+  arqs.map((a,i)=>({label:a.n,data:a.s_explosive,backgroundColor:COLORS_T[i],borderColor:COLORS[i],borderWidth:2,borderRadius:4}))
+},options:BASE});
+
+new Chart(document.getElementById('ch-rhie'),{type:'line',data:{labels:SESS,datasets:
+  arqs.map((a,i)=>({label:a.n,data:a.s_RHIE,borderColor:COLORS[i],backgroundColor:COLORS_T[i],tension:0.3,pointRadius:4,pointBackgroundColor:COLORS[i]}))
+},options:BASE});
+
+/* ── SESSIONS ── */
+function showSess(si, btn){
+  btn.closest('.pill-bar').querySelectorAll('.pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const c=document.getElementById('sess-cards');
+  c.innerHTML='';
+  arqs.forEach((a,i)=>{
+    const absent=si===3&&i===0; // Rigamonti falta Jue 17/9
+    const card=document.createElement('div');
+    card.className='sess-card';
+    const metrics=[
+      {v:a.s_dist[si],    l:'Dist (m)'},
+      {v:a.s_dives[si],   l:'Saltos'},
+      {v:a.s_load[si],    l:'Carga Buc'},
+      {v:a.s_acc[si],     l:'Acc >2,5'},
+      {v:a.s_dec[si],     l:'Dec >2,5'},
+      {v:a.s_jumps[si],   l:'Saltos'},
+      {v:a.s_explosive[si],l:'Explosivos'},
+      {v:a.s_RHIE[si],    l:'RHIE'},
+    ];
+    card.innerHTML=`
+      <div class="sess-player-label">
+        <span style="color:${COLORS[i]}">${a.n}</span>
+        ${absent?'<span class="absent-tag">Sin datos (ausente)</span>':''}
+        ${a.gps&&!absent?`<span class="absent-tag">${a.gps}</span>`:''}
+      </div>
+      ${absent
+        ? '<div style="text-align:center;padding:12px 0;color:#B8B8B3;font-size:12px">Sin datos GPS para esta sesión</div>'
+        : `<div class="metric-grid">${metrics.map(m=>`
+            <div class="metric-item">
+              <div class="mv">${m.v.toLocaleString('de')}</div>
+              <div class="ml">${m.l}</div>
+            </div>`).join('')}
+          </div>`}`;
+    c.appendChild(card);
+  });
+}
+showSess(0, document.querySelector('#panel-ses .pill'));
+
+/* ── DIVING ── */
+function buildDiveCards(){
+  const c=document.getElementById('dive-cards');
+  arqs.forEach((a,i)=>{
+    const card=document.createElement('div');
+    card.className='dive-card';
+    const maxD=Math.max(a.dives_L,a.dives_C,a.dives_R);
+    const maxL=Math.max(a.load_L,a.load_C,a.load_R);
+    card.innerHTML=`
+      <div class="dive-header">
+        <span style="color:${COLORS[i]}">${a.n}</span>
+        <span class="total-badge">${a.dives} saltos totales</span>
+      </div>
+      <div class="sub-label">Cantidad por dirección</div>
+      <div class="dir-row"><span class="dir-lbl">IZQ</span><div class="dir-bar-wrap"><div class="dir-bar dir-L" style="width:${Math.round(a.dives_L/maxD*100)}%"></div></div><span class="dir-val">${a.dives_L}</span></div>
+      <div class="dir-row"><span class="dir-lbl">CEN</span><div class="dir-bar-wrap"><div class="dir-bar dir-C" style="width:${Math.round(a.dives_C/maxD*100)}%"></div></div><span class="dir-val">${a.dives_C}</span></div>
+      <div class="dir-row"><span class="dir-lbl">DER</span><div class="dir-bar-wrap"><div class="dir-bar dir-R" style="width:${Math.round(a.dives_R/maxD*100)}%"></div></div><span class="dir-val">${a.dives_R}</span></div>
+      <div class="divider"></div>
+      <div class="sub-label">Carga por dirección (total: ${a.load})</div>
+      <div class="dir-row"><span class="dir-lbl">IZQ</span><div class="dir-bar-wrap"><div class="dir-bar dir-L" style="width:${Math.round(a.load_L/maxL*100)}%"></div></div><span class="dir-val">${a.load_L}</span></div>
+      <div class="dir-row"><span class="dir-lbl">CEN</span><div class="dir-bar-wrap"><div class="dir-bar dir-C" style="width:${Math.round(a.load_C/maxL*100)}%"></div></div><span class="dir-val">${a.load_C}</span></div>
+      <div class="dir-row"><span class="dir-lbl">DER</span><div class="dir-bar-wrap"><div class="dir-bar dir-R" style="width:${Math.round(a.load_R/maxL*100)}%"></div></div><span class="dir-val">${a.load_R}</span></div>
+      <div class="divider"></div>
+      <div class="sub-label">Saltos — Alta: ${a.jumps_H} &nbsp;|&nbsp; Media: ${a.jumps_M} &nbsp;|&nbsp; Baja: ${a.jumps_L} &nbsp;(Total: ${a.jumps})</div>`;
+    c.appendChild(card);
+  });
+}
+buildDiveCards();
+
+new Chart(document.getElementById('ch-dives'),{type:'bar',data:{labels:SESS,datasets:
+  arqs.map((a,i)=>({label:a.n,data:a.s_dives,backgroundColor:COLORS_T[i],borderColor:COLORS[i],borderWidth:2,borderRadius:4}))
+},options:BASE});
+
+new Chart(document.getElementById('ch-load'),{type:'bar',data:{labels:SESS,datasets:
+  arqs.map((a,i)=>({label:a.n,data:a.s_load,backgroundColor:COLORS_T[i],borderColor:COLORS[i],borderWidth:2,borderRadius:4}))
+},options:BASE});
+</script>
+</body>
+</html>
