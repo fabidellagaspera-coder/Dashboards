@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Carga Fecha 11 vs EDLP</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F0EE;color:#252523;max-width:480px;margin:0 auto;min-height:100vh}
+  .header{background:#252523;padding:13px 16px;display:flex;align-items:center;gap:11px}
+  .logo-wrap{width:40px;height:40px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:2px}
+  .logo-wrap svg{width:34px;height:34px}
+  .header-text h1{font-size:15px;font-weight:700;color:#fff}
+  .header-text p{font-size:11px;color:#9A9A95;margin-top:2px}
+  .tabs{display:flex;background:#1a1a19;border-bottom:1px solid #3D3D3A;position:sticky;top:0;z-index:10}
+  .tab{flex:1;padding:9px 4px;text-align:center;font-size:12px;font-weight:600;color:#6C6C68;cursor:pointer;border-bottom:3px solid transparent;transition:all .18s}
+  .tab.active{color:#C42430;border-bottom-color:#C42430}
+  .panel{display:none;padding:12px}
+  .panel.active{display:block}
+  .alert-box{background:#FFF8E6;border-left:4px solid #E8A020;border-radius:8px;padding:11px 13px;margin-bottom:12px}
+  .alert-box .at{font-size:12px;font-weight:700;color:#C42430;margin-bottom:5px}
+  .alert-box .ar{font-size:11.5px;color:#3D3D3A;font-weight:600;line-height:1.8}
+  .alert-box .ar span{color:#6C6C68;font-weight:400}
+  .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+  .kpi{background:#fff;border:1px solid #E9E9E6;border-radius:10px;padding:11px 12px}
+  .kpi .kv{font-size:22px;font-weight:800;color:#252523;line-height:1}
+  .kpi .ku{font-size:11px;font-weight:600;color:#B8B8B3;margin-left:2px}
+  .kpi .kl{font-size:10px;color:#9A9A95;margin-top:4px}
+  .chart-card{background:#fff;border-radius:10px;padding:13px;margin-bottom:10px;border:1px solid #E9E9E6}
+  .chart-card h3{font-size:11px;font-weight:700;color:#9A9A95;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .chart-wrap{position:relative;height:150px}
+  .slabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#9A9A95;margin:14px 0 8px}
+  .slabel:first-child{margin-top:0}
+  .pill-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .pill{padding:6px 12px;font-size:11.5px;border-radius:20px;border:none;background:#DEDEDA;color:#3D3D3A;cursor:pointer;font-weight:600;transition:all .18s;white-space:nowrap}
+  .pill.active{background:#C42430;color:#fff}
+  .card{background:#fff;border:1px solid #E9E9E6;border-radius:10px;padding:12px 13px;margin-bottom:8px;transition:opacity .2s}
+  .card.absent{opacity:.45}
+  .card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .player-name{font-size:13px;font-weight:700;color:#252523;letter-spacing:.2px}
+  .badge{font-size:9.5px;padding:2px 8px;border-radius:10px;font-weight:700}
+  .badge-sg{background:#F0F0EE;color:#9A9A95}
+  .badge-gp{background:#FFF0F0;color:#C42430}
+  .card-value{display:flex;align-items:baseline;gap:4px;margin-bottom:7px}
+  .val-num{font-size:28px;font-weight:800;color:#252523;line-height:1}
+  .val-unit{font-size:12px;color:#9A9A95;font-weight:600}
+  .bar-track{height:4px;background:#EDEDEB;border-radius:2px;overflow:hidden}
+  .bar-fill{height:100%;background:#C42430;border-radius:2px;transition:width .35s ease}
+  .prom-card{background:#FFF8E6;border-color:#E8A020;border-left:3px solid #E8A020;margin-bottom:12px}
+  .prom-label{color:#B87200;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .prom-val{color:#B87200 !important}
+  .prom-bar{background:#E8A020 !important}
+  .delta{font-size:10px;margin-top:6px;font-weight:600;letter-spacing:.1px}
+  .delta-up{color:#2E7D32}
+  .delta-down{color:#C42430}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo-wrap">
+    <svg viewBox="0 0 100 118" xmlns="http://www.w3.org/2000/svg">
+      <defs><clipPath id="bc"><path d="M4,28 L96,28 L96,76 Q96,102 50,116 Q4,102 4,76 Z"/></clipPath></defs>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="#111"/>
+      <rect x="4" y="4" width="92" height="24" fill="#fff" stroke="#111" stroke-width="1.5"/>
+      <text x="50" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-size="10" font-weight="900" fill="#111" letter-spacing=".3">G Y E 1908</text>
+      <g clip-path="url(#bc)">
+        <rect x="16" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="43" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="70" y="28" width="14" height="92" fill="#fff"/>
+      </g>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="none" stroke="#111" stroke-width="3"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Carga Fecha 11 vs EDLP</h1>
+    <p>Clausura Fecha 11 | Lun 28/9 – Sáb 3/10</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('eq')">Equipo</div>
+  <div class="tab" onclick="showTab('jug')">Jugadores</div>
+  <div class="tab" onclick="showTab('vel')">Velocidades</div>
+</div>
+
+<!-- EQUIPO -->
+<div id="tab-eq" class="panel active">
+  <div class="alert-box">
+    <div class="at">⚠ Sin datos GPS completos</div>
+    <div class="ar">
+      MARTINI · SAAVEDRA · MOYA <span>— sin GPS toda la semana</span><br>
+      LENCIONI <span>4 ses</span> · PATRITTI <span>3 ses</span> · GONZALEZ <span>3 ses</span> · BARBOZA <span>5 ses</span> · UBEDA <span>1 ses</span>
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi"><div><span class="kv">20.654</span><span class="ku">m</span></div><div class="kl">Dist prom. grupal</div></div>
+    <div class="kpi"><div><span class="kv">1.198</span><span class="ku">m</span></div><div class="kl">HSR prom. grupal</div></div>
+    <div class="kpi"><div><span class="kv">32,84</span><span class="ku">km/h</span></div><div class="kl">Sprint máx grupal</div></div>
+    <div class="kpi"><div><span class="kv">68</span></div><div class="kl">Acc>3 prom. grupal</div></div>
+  </div>
+  <p class="slabel">Distancia promedio por sesión</p>
+  <div class="chart-card"><h3>Distancia Total (m)</h3><div class="chart-wrap"><canvas id="ch-dist"></canvas></div></div>
+  <p class="slabel">Alta intensidad</p>
+  <div class="chart-card"><h3>HSR >19 km/h (m)</h3><div class="chart-wrap"><canvas id="ch-hsr"></canvas></div></div>
+  <div class="chart-card"><h3>B6 Sprint >24 km/h (m)</h3><div class="chart-wrap"><canvas id="ch-b6"></canvas></div></div>
+</div>
+
+<!-- JUGADORES -->
+<div id="tab-jug" class="panel">
+  <div class="pill-bar">
+    <button class="pill active" onclick="sortJug('dist',this)">Dist</button>
+    <button class="pill" onclick="sortJug('hsr',this)">HSR</button>
+    <button class="pill" onclick="sortJug('b6',this)">B6</button>
+    <button class="pill" onclick="sortJug('b5',this)">B5</button>
+    <button class="pill" onclick="sortJug('acc3',this)">Acc>3</button>
+    <button class="pill" onclick="sortJug('dec3',this)">Dec>3</button>
+  </div>
+  <div id="jug-cards"></div>
+</div>
+
+<!-- VELOCIDADES -->
+<div id="tab-vel" class="panel">
+  <p class="slabel">Sprint máximo – semana</p>
+  <div id="vel-cards"></div>
+</div>
+
+<script>
+const DAYS=['Lun 28/9','Mar 29/9','Mié 30/9','Jue 1/10','Vie 2/10','Sáb 3/10'];
+const eq={
+  dist:[3127,4358,4766,4720,1584,3974],
+  hsr: [28,  301, 178, 455, 47,  303 ],
+  b6:  [0,   12,  26,  104, 15,  37  ],
+  b5:  [28,  288, 151, 315, 31,  264 ],
+  acc3:[11,  16,  15,  13,  1,   15  ],
+  dec3:[8,   14,  17,  15,  0,   10  ]
+};
+
+const jug=[
+  {n:'MÓDICA',    dist:22522,b5:898, b6:78, hsr:976, spmax:28.11,acc3:46, dec3:51, gps:1},
+  {n:'ARMOA',     dist:20002,b5:1077,b6:562,hsr:1639,spmax:32.00,acc3:82, dec3:54, gps:1},
+  {n:'ANDRADA',   dist:20094,b5:1149,b6:298,hsr:1448,spmax:29.49,acc3:61, dec3:79, gps:1},
+  {n:'MARTINI',   dist:0,    b5:0,   b6:0,  hsr:0,   spmax:0,    acc3:0,  dec3:0,  gps:0},
+  {n:'MONDINO',   dist:22525,b5:432, b6:52, hsr:512, spmax:27.38,acc3:43, dec3:40, gps:1},
+  {n:'FERNANDEZ', dist:23732,b5:1011,b6:88, hsr:1100,spmax:26.61,acc3:62, dec3:78, gps:1},
+  {n:'MUÑOZ',     dist:23019,b5:551, b6:86, hsr:637, spmax:29.66,acc3:24, dec3:20, gps:1},
+  {n:'LENCIONI',  dist:15476,b5:1112,b6:461,hsr:1572,spmax:29.05,acc3:67, dec3:33, gps:2},
+  {n:'ANTONINI',  dist:22776,b5:878, b6:211,hsr:1113,spmax:27.31,acc3:61, dec3:59, gps:1},
+  {n:'SAAVEDRA',  dist:0,    b5:0,   b6:0,  hsr:0,   spmax:0,    acc3:0,  dec3:0,  gps:0},
+  {n:'GUIFFREY',  dist:22394,b5:810, b6:140,hsr:950, spmax:28.40,acc3:102,dec3:54, gps:1},
+  {n:'PATRITTI',  dist:7990, b5:54,  b6:0,  hsr:54,  spmax:20.33,acc3:0,  dec3:0,  gps:2},
+  {n:'SABATINI',  dist:21552,b5:1488,b6:97, hsr:1585,spmax:27.96,acc3:67, dec3:56, gps:1},
+  {n:'GONZALEZ',  dist:9759, b5:1544,b6:0,  hsr:1544,spmax:23.53,acc3:8,  dec3:7,  gps:2},
+  {n:'CORTEZ',    dist:23990,b5:1081,b6:239,hsr:1426,spmax:32.84,acc3:66, dec3:78, gps:1},
+  {n:'J.FRANCO',  dist:22537,b5:1252,b6:199,hsr:1451,spmax:28.97,acc3:75, dec3:65, gps:1},
+  {n:'CEBALLOS',  dist:23325,b5:1422,b6:237,hsr:1659,spmax:30.74,acc3:91, dec3:80, gps:1},
+  {n:'MOYA',      dist:0,    b5:0,   b6:0,  hsr:0,   spmax:0,    acc3:0,  dec3:0,  gps:0},
+  {n:'CARRERA',   dist:22185,b5:741, b6:115,hsr:856, spmax:29.47,acc3:48, dec3:48, gps:1},
+  {n:'CINGOLANI', dist:20976,b5:1612,b6:257,hsr:1869,spmax:32.83,acc3:101,dec3:84, gps:1},
+  {n:'PAREDES',   dist:24228,b5:1329,b6:390,hsr:1720,spmax:29.33,acc3:118,dec3:111,gps:1},
+  {n:'UBEDA',     dist:3654, b5:37,  b6:10, hsr:47,  spmax:25.11,acc3:25, dec3:12, gps:2},
+  {n:'RECALDE',   dist:24515,b5:679, b6:149,hsr:985, spmax:28.82,acc3:89, dec3:91, gps:1},
+  {n:'VARGAS',    dist:21678,b5:916, b6:261,hsr:1177,spmax:29.01,acc3:85, dec3:60, gps:1},
+  {n:'BARBOZA',   dist:22002,b5:506, b6:81, hsr:973, spmax:29.58,acc3:60, dec3:40, gps:2},
+  {n:'ROMANO',    dist:20539,b5:705, b6:165,hsr:1239,spmax:29.19,acc3:76, dec3:40, gps:1},
+  {n:'RODRIGUEZ', dist:22665,b5:1365,b6:154,hsr:1518,spmax:28.70,acc3:70, dec3:81, gps:1},
+  {n:'T.ORTIZ',   dist:23655,b5:1457,b6:57, hsr:1515,spmax:29.29,acc3:55, dec3:46, gps:1},
+  {n:"O'CONNOR",  dist:25388,b5:1627,b6:102,hsr:1729,spmax:26.69,acc3:85, dec3:100,gps:1},
+  {n:'U.SANCHEZ', dist:21347,b5:911, b6:74, hsr:985, spmax:27.51,acc3:59, dec3:81, gps:1},
+  {n:'SIMONI',    dist:23783,b5:1384,b6:531,hsr:1915,spmax:29.51,acc3:73, dec3:102,gps:1}
+];
+
+/* ── UTILS ── */
+function fmt(key,val){
+  if(key==='dist'||key==='hsr'||key==='b5'||key==='b6') return val.toLocaleString('de');
+  if(key==='spmax') return val.toFixed(2).replace('.',',');
+  return val;
+}
+function unit(key){
+  if(key==='dist'||key==='hsr'||key==='b5'||key==='b6') return 'm';
+  if(key==='spmax') return 'km/h';
+  return '';
+}
+
+function showTab(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  ['eq','jug','vel'].forEach((n,i)=>{if(n===id)document.querySelectorAll('.tab')[i].classList.add('active')});
+}
+
+/* ── CHARTS ── */
+const TICK={color:'#B8B8B3',font:{size:10}};
+const GRID={color:'#EDEDEB'};
+const OPTS={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{x:{ticks:TICK,grid:GRID},y:{ticks:TICK,grid:GRID}}};
+const RED='rgba(196,36,48,0.85)',REDT='rgba(196,36,48,0.15)';
+function mkChart(id,data){
+  new Chart(document.getElementById(id),{type:'bar',data:{labels:DAYS,datasets:[{data,
+    backgroundColor:REDT,borderColor:RED,borderWidth:2,borderRadius:4}]},options:OPTS});
+}
+mkChart('ch-dist',eq.dist);
+mkChart('ch-hsr',eq.hsr);
+mkChart('ch-b6',eq.b6);
+
+/* ── CARDS ── */
+function fmtDelta(key,abs){
+  if(key==='dist'||key==='hsr'||key==='b5'||key==='b6') return Math.round(abs).toLocaleString('de');
+  if(key==='spmax') return abs.toFixed(2).replace('.',',');
+  return Math.round(abs);
+}
+
+function renderCards(cid,arr,hlKey){
+  const c=document.getElementById(cid);
+  c.innerHTML='';
+  const active=arr.filter(p=>!(p.dist===0&&p.spmax===0));
+  const maxVal=Math.max(...active.map(p=>p[hlKey]||0));
+  const avgVal=active.reduce((s,p)=>s+(p[hlKey]||0),0)/active.length;
+  const avgPct=maxVal>0?Math.round((avgVal/maxVal)*100):0;
+
+  // Promedio Grupal card
+  const ac=document.createElement('div');
+  ac.className='card prom-card';
+  ac.innerHTML=`
+    <div class="card-top"><span class="player-name prom-label">⌀ Promedio Grupal (${active.length} jugadores)</span></div>
+    <div class="card-value">
+      <span class="val-num prom-val">${fmt(hlKey,hlKey==='spmax'?Math.round(avgVal*100)/100:Math.round(avgVal))}</span>
+      ${unit(hlKey)?`<span class="val-unit">${unit(hlKey)}</span>`:''}
+    </div>
+    <div class="bar-track"><div class="bar-fill prom-bar" style="width:${avgPct}%"></div></div>`;
+  c.appendChild(ac);
+
+  arr.forEach(p=>{
+    const absent=p.dist===0&&p.spmax===0;
+    const val=p[hlKey]||0;
+    const pct=maxVal>0?Math.round((val/maxVal)*100):0;
+    const delta=val-avgVal;
+    const up=delta>=0;
+    const badge=absent?'<span class="badge badge-sg">Sin GPS</span>':
+                p.gps===2?'<span class="badge badge-gp">GPS Parcial</span>':'';
+    const deltaEl=absent?'':`<div class="delta ${up?'delta-up':'delta-down'}">${up?'▲':'▼'} ${fmtDelta(hlKey,Math.abs(delta))} ${unit(hlKey)} ${up?'sobre':'bajo'} el prom.</div>`;
+    const d=document.createElement('div');
+    d.className='card'+(absent?' absent':'');
+    d.innerHTML=`
+      <div class="card-top"><span class="player-name">${p.n}</span>${badge}</div>
+      <div class="card-value">
+        <span class="val-num">${fmt(hlKey,val)}</span>
+        ${unit(hlKey)?`<span class="val-unit">${unit(hlKey)}</span>`:''}
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${absent?0:pct}%"></div></div>
+      ${deltaEl}`;
+    c.appendChild(d);
+  });
+}
+
+function sortJug(key,btn){
+  btn.closest('.pill-bar').querySelectorAll('.pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const sorted=[...jug].sort((a,b)=>(b[key]||0)-(a[key]||0));
+  renderCards('jug-cards',sorted,key);
+}
+
+/* ── VELOCIDADES ── */
+function renderVel(){
+  const sorted=[...jug].sort((a,b)=>b.spmax-a.spmax);
+  renderCards('vel-cards',sorted,'spmax');
+}
+
+/* ── INIT ── */
+renderCards('jug-cards',[...jug].sort((a,b)=>b.dist-a.dist),'dist');
+renderVel();
+</script>
+</body>
+</html>
