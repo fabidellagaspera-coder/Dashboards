@@ -44,11 +44,11 @@
         "file": "dashboards/reporte_carga_fecha5_cat.html",
         "date": "2026-08-16"
     },
-        {
-            "title": "Carga Fecha 5 vs CAT – Arqueros",
-            "file": "dashboards/arqueros_fecha5_cat.html",
-            "date": "2026-08-16"
-        },
+    {
+        "title": "Carga Fecha 5 vs CAT – Arqueros",
+        "file": "dashboards/arqueros_fecha5_cat.html",
+        "date": "2026-08-16"
+    },
     {
         "title": "Carga Fecha 6 vs Gimnasia LP",
         "file": "dashboards/reporte_carga_fecha6_gimnasia.html",
@@ -148,5 +148,10 @@
         "title": "Carga Fecha 12 vs NOB – Arqueros",
         "file": "dashboards/arqueros_fecha12_nob.html",
         "date": "2026-10-11"
+    },
+    {
+        "title": "Carga Fecha 13 vs VELEZ – Jugadores de Campo",
+        "file": "dashboards/reporte_carga_fecha13_velez.html",
+        "date": "2026-10-16"
     }
 ]
