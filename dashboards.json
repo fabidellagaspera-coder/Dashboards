@@ -158,5 +158,10 @@
         "title": "Carga Fecha 13 vs VELEZ – Arqueros",
         "file": "dashboards/arqueros_fecha13_velez.html",
         "date": "2026-10-16"
+    },
+    {
+        "title": "Carga Fecha 14 vs PLATENSE – Jugadores de Campo",
+        "file": "dashboards/reporte_carga_fecha14_platense.html",
+        "date": "2026-10-22"
     }
 ]
