@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Carga GPS Fecha 14 vs PLATENSE</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F0EE;color:#252523;max-width:480px;margin:0 auto;min-height:100vh}
+  .header{background:#252523;padding:13px 16px;display:flex;align-items:center;gap:11px}
+  .logo-wrap{width:40px;height:40px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:2px}
+  .logo-wrap svg{width:34px;height:34px}
+  .header-text h1{font-size:15px;font-weight:700;color:#fff}
+  .header-text p{font-size:11px;color:#9A9A95;margin-top:2px}
+  .tabs{display:flex;background:#1a1a19;border-bottom:1px solid #3D3D3A;position:sticky;top:0;z-index:10}
+  .tab{flex:1;padding:9px 4px;text-align:center;font-size:12px;font-weight:600;color:#6C6C68;cursor:pointer;border-bottom:3px solid transparent;transition:all .18s}
+  .tab.active{color:#C42430;border-bottom-color:#C42430}
+  .panel{display:none;padding:12px}
+  .panel.active{display:block}
+  .alert-box{background:#FFF8E6;border-left:4px solid #E8A020;border-radius:8px;padding:11px 13px;margin-bottom:12px}
+  .alert-box .at{font-size:12px;font-weight:700;color:#B87200;margin-bottom:5px}
+  .alert-box .ar{font-size:11px;color:#3D3D3A;line-height:1.85}
+  .alert-box .ar b{font-weight:700}
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .kpi{background:#fff;border-radius:10px;padding:12px 13px;border:1px solid #E9E9E6}
+  .kpi-val{font-size:22px;font-weight:800;color:#252523;line-height:1}
+  .kpi-lbl{font-size:10px;color:#9A9A95;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+  .kpi-sub{font-size:10px;color:#C42430;font-weight:600;margin-top:2px}
+  .slabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#9A9A95;margin:14px 0 8px}
+  .slabel:first-child{margin-top:0}
+  .chart-card{background:#fff;border-radius:10px;padding:13px;margin-bottom:10px;border:1px solid #E9E9E6}
+  .chart-card h3{font-size:11px;font-weight:700;color:#9A9A95;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .chart-wrap{position:relative;height:160px}
+  .sort-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+  .sort-btn{padding:5px 11px;font-size:11px;border-radius:16px;border:none;background:#DEDEDA;color:#3D3D3A;cursor:pointer;font-weight:600;transition:all .18s}
+  .sort-btn.active{background:#C42430;color:#fff}
+  .prom-card{background:#FFF8E6;border:1px solid #E8A020;border-left:3px solid #E8A020;border-radius:10px;padding:11px 13px;margin-bottom:8px}
+  .prom-label{color:#B87200;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .player-card{background:#fff;border-radius:10px;padding:11px 13px;margin-bottom:7px;border:1px solid #E9E9E6;transition:opacity .18s}
+  .player-card.sin-gps{opacity:.45}
+  .pc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .pc-name{font-size:13px;font-weight:700;color:#252523}
+  .pc-badges{display:flex;gap:5px;align-items:center}
+  .badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px}
+  .badge-gps{background:#F5F5F3;color:#9A9A95;border:1px solid #DEDEDA}
+  .badge-parcial{background:#FFF3E0;color:#E8A020;border:1px solid #FFD080}
+  .pc-main{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .pc-val{font-size:20px;font-weight:800;color:#252523;min-width:70px}
+  .pc-bar-wrap{flex:1;height:7px;background:#EDEDEB;border-radius:3.5px;overflow:hidden}
+  .pc-bar{height:100%;background:#C42430;border-radius:3.5px;transition:width .3s}
+  .prom-val{color:#B87200 !important}
+  .prom-bar{background:#E8A020 !important}
+  .pc-sub{font-size:10px;color:#B8B8B3}
+  .delta{font-size:10px;margin-top:5px;font-weight:600;letter-spacing:.1px}
+  .delta-up{color:#2E7D32}.delta-down{color:#C42430}
+  .vel-card{background:#fff;border-radius:10px;padding:11px 13px;margin-bottom:7px;border:1px solid #E9E9E6}
+  .vel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .vel-name{font-size:13px;font-weight:700;color:#252523}
+  .vel-spd{font-size:18px;font-weight:800;color:#C42430}
+  .vel-bar-wrap{height:6px;background:#EDEDEB;border-radius:3px;overflow:hidden;margin-bottom:5px}
+  .vel-bar{height:100%;background:#C42430;border-radius:3px}
+  .vel-sub{font-size:10px;color:#B8B8B3}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo-wrap">
+    <svg viewBox="0 0 100 118" xmlns="http://www.w3.org/2000/svg">
+      <defs><clipPath id="bc"><path d="M4,28 L96,28 L96,76 Q96,102 50,116 Q4,102 4,76 Z"/></clipPath></defs>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="#111"/>
+      <rect x="4" y="4" width="92" height="24" fill="#fff" stroke="#111" stroke-width="1.5"/>
+      <text x="50" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-size="10" font-weight="900" fill="#111" letter-spacing=".3">G Y E 1908</text>
+      <g clip-path="url(#bc)">
+        <rect x="16" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="43" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="70" y="28" width="14" height="92" fill="#fff"/>
+      </g>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="none" stroke="#111" stroke-width="3"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Carga GPS – Fecha 14 vs PLATENSE</h1>
+    <p>Clausura Fecha 14 | Lun 19/10 – Jue 22/10</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showPanel('eq')">Equipo</div>
+  <div class="tab" onclick="showPanel('jug')">Jugadores</div>
+  <div class="tab" onclick="showPanel('vel')">Velocidades</div>
+</div>
+
+<!-- EQUIPO -->
+<div id="panel-eq" class="panel active">
+  <div class="alert-box">
+    <div class="at">⚠ Datos GPS incompletos</div>
+    <div class="ar">
+      <b>Sin GPS:</b> Martini, Saavedra, Guiffrey, Moya, O'Connor<br>
+      <b>GPS Parcial Lun 19/10:</b> Módica, Mondino, Fernandez, Muñoz, Lencioni, Antonini, Cingolani, Paredes, Recalde, Vargas, Barboza<br>
+      <b>Ausente Lun 19/10:</b> Ceballos &nbsp;·&nbsp; <b>Ausente Jue 22/10:</b> Muñoz<br>
+      <b>GPS Parcial Jue 22/10:</b> Gonzalez
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-val">12.403</div><div class="kpi-lbl">Dist. promedio (m)</div></div>
+    <div class="kpi"><div class="kpi-val">830</div><div class="kpi-lbl">HSR promedio (m)</div></div>
+    <div class="kpi"><div class="kpi-val">32,58</div><div class="kpi-lbl">Sprint máx (km/h)</div><div class="kpi-sub">Barboza</div></div>
+    <div class="kpi"><div class="kpi-val">48</div><div class="kpi-lbl">Acc >3 promedio</div></div>
+  </div>
+  <p class="slabel">Distancia por sesión (promedio grupal)</p>
+  <div class="chart-card"><h3>Distancia Total (m)</h3><div class="chart-wrap"><canvas id="ch-dist"></canvas></div></div>
+  <p class="slabel">Alta intensidad</p>
+  <div class="chart-card"><h3>HSR >19 km/h (m)</h3><div class="chart-wrap"><canvas id="ch-hsr"></canvas></div></div>
+  <p class="slabel">Sprint máximo por jugador</p>
+  <div class="chart-card"><h3>Velocidad máxima (km/h)</h3><div class="chart-wrap"><canvas id="ch-spmax"></canvas></div></div>
+</div>
+
+<!-- JUGADORES -->
+<div id="panel-jug" class="panel">
+  <div class="sort-bar">
+    <button class="sort-btn active" onclick="sortCards('dist',this)">Distancia</button>
+    <button class="sort-btn" onclick="sortCards('hsr',this)">HSR</button>
+    <button class="sort-btn" onclick="sortCards('b5',this)">B5</button>
+    <button class="sort-btn" onclick="sortCards('b6',this)">B6</button>
+    <button class="sort-btn" onclick="sortCards('acc3',this)">Acc3</button>
+    <button class="sort-btn" onclick="sortCards('dec3',this)">Dec3</button>
+  </div>
+  <div id="cards-container"></div>
+</div>
+
+<!-- VELOCIDADES -->
+<div id="panel-vel" class="panel">
+  <div id="vel-container"></div>
+</div>
+
+<script>
+const SESS=['Lun 19/10','Mar 20/10','Mié 21/10','Jue 22/10'];
+const DIST_AVG=[2759,3924,4012,1854];
+const HSR_AVG=[96,294,317,122];
+
+const players=[
+  {n:'Agustin Módica',   gps:2, dist:10412,hsr:285, b5:275, b6:10,  acc3:22,dec3:14,spmax:24.71,
+   s_dist:[1231,2796,4479,1906],s_hsr:[0,10,251,25]},
+  {n:'Blas Armoa',       gps:1, dist:13802,hsr:1053,b5:754, b6:299, acc3:61,dec3:53,spmax:30.55,
+   s_dist:[4008,4613,3449,1732],s_hsr:[123,556,349,25]},
+  {n:'Brian Andrada',    gps:1, dist:12666,hsr:1166,b5:778, b6:387, acc3:55,dec3:57,spmax:31.24,
+   s_dist:[3640,4522,3402,1102],s_hsr:[179,554,380,52]},
+  {n:'Diego Mondino',    gps:2, dist:9542, hsr:166, b5:154, b6:11,  acc3:13,dec3:12,spmax:25.17,
+   s_dist:[1228,2502,3914,1899],s_hsr:[0,7,111,48]},
+  {n:'Esteban Fernandez',gps:2, dist:13105,hsr:658, b5:585, b6:73,  acc3:34,dec3:37,spmax:29.13,
+   s_dist:[1348,4808,5271,1678],s_hsr:[3,303,307,45]},
+  {n:'Ezequiel Muñoz',   gps:2, dist:6188, hsr:124, b5:124, b6:0,   acc3:5, dec3:3, spmax:22.26,
+   s_dist:[1274,2381,2532,0],   s_hsr:[41,4,79,0]},
+  {n:'Facundo Lencioni', gps:2, dist:9387, hsr:519, b5:480, b6:39,  acc3:33,dec3:23,spmax:26.64,
+   s_dist:[1213,1906,4618,1649],s_hsr:[0,90,327,102]},
+  {n:'Fermin Antonini',  gps:2, dist:10204,hsr:785, b5:549, b6:204, acc3:32,dec3:15,spmax:26.75,
+   s_dist:[1195,1874,3768,3366],s_hsr:[81,4,132,568]},
+  {n:'Geronimo Patritti',gps:1, dist:15511,hsr:973, b5:691, b6:283, acc3:76,dec3:57,spmax:29.96,
+   s_dist:[3963,5464,4400,1684],s_hsr:[173,436,314,51]},
+  {n:'Ignacio Sabatini', gps:1, dist:14603,hsr:1182,b5:783, b6:399, acc3:91,dec3:70,spmax:31.64,
+   s_dist:[3673,4707,4376,1847],s_hsr:[67,560,457,98]},
+  {n:'Imanol Gonzalez',  gps:2, dist:10840,hsr:1054,b5:859, b6:194, acc3:42,dec3:43,spmax:31.18,
+   s_dist:[3606,4039,2425,769], s_hsr:[152,414,445,43]},
+  {n:'Ismael Cortez',    gps:1, dist:14666,hsr:639, b5:444, b6:112, acc3:41,dec3:54,spmax:29.86,
+   s_dist:[3906,4930,4113,1717],s_hsr:[136,317,142,43]},
+  {n:'Juan Franco',      gps:1, dist:14650,hsr:1182,b5:826, b6:357, acc3:56,dec3:56,spmax:30.56,
+   s_dist:[3834,4667,4301,1847],s_hsr:[142,487,508,45]},
+  {n:'Julian Ceballos',  gps:2, dist:10568,hsr:1152,b5:915, b6:237, acc3:64,dec3:43,spmax:28.51,
+   s_dist:[0,4393,3587,2588],   s_hsr:[0,530,343,279]},
+  {n:'Lautaro Carrera',  gps:1, dist:14849,hsr:696, b5:514, b6:182, acc3:48,dec3:46,spmax:30.97,
+   s_dist:[4211,4801,3978,1858],s_hsr:[130,348,140,78]},
+  {n:'Luciano Cingolani',gps:2, dist:9295, hsr:802, b5:566, b6:236, acc3:54,dec3:43,spmax:30.40,
+   s_dist:[1211,1888,4250,1947],s_hsr:[3,156,480,162]},
+  {n:'Luciano Paredes',  gps:2, dist:10245,hsr:870, b5:711, b6:160, acc3:48,dec3:38,spmax:29.66,
+   s_dist:[1230,2159,4891,1964],s_hsr:[180,61,569,60]},
+  {n:'Martin Ubeda',     gps:1, dist:15100,hsr:689, b5:525, b6:79,  acc3:54,dec3:53,spmax:29.79,
+   s_dist:[4137,5179,4033,1750],s_hsr:[58,362,236,32]},
+  {n:'Matias Recalde',   gps:2, dist:10660,hsr:639, b5:428, b6:113, acc3:39,dec3:45,spmax:29.55,
+   s_dist:[1245,2945,4698,1773],s_hsr:[0,111,466,62]},
+  {n:'Matias Vargas',    gps:2, dist:9025, hsr:638, b5:619, b6:19,  acc3:26,dec3:16,spmax:27.22,
+   s_dist:[1228,2026,4538,1234],s_hsr:[295,54,238,51]},
+  {n:'Nahuel Barboza',   gps:2, dist:12852,hsr:563, b5:406, b6:94,  acc3:44,dec3:31,spmax:32.58,
+   s_dist:[1497,4720,4951,1684],s_hsr:[0,288,235,41]},
+  {n:'Nicolas Romano',   gps:1, dist:15533,hsr:1490,b5:1077,b6:240, acc3:81,dec3:57,spmax:29.96,
+   s_dist:[4282,4366,3604,3280],s_hsr:[90,408,286,707]},
+  {n:'Santiago Rodriguez',gps:1,dist:13747,hsr:1117,b5:886, b6:232, acc3:47,dec3:44,spmax:30.30,
+   s_dist:[3804,4717,3535,1690],s_hsr:[128,496,439,54]},
+  {n:'Tomas Ortiz',      gps:1, dist:15364,hsr:1161,b5:1001,b6:161, acc3:55,dec3:33,spmax:28.29,
+   s_dist:[3994,5096,3677,2597],s_hsr:[88,360,424,289]},
+  {n:'Ulises Sanchez',   gps:1, dist:13496,hsr:949, b5:812, b6:137, acc3:59,dec3:55,spmax:29.53,
+   s_dist:[3861,5055,3503,1077],s_hsr:[208,434,270,37]},
+  {n:'Valentino Simoni', gps:1, dist:16186,hsr:1021,b5:779, b6:243, acc3:55,dec3:74,spmax:30.24,
+   s_dist:[4163,5464,4860,1698],s_hsr:[114,499,350,58]},
+  /* Sin GPS */
+  {n:'David Martini',    gps:0, dist:0,hsr:0,b5:0,b6:0,acc3:0,dec3:0,spmax:0,s_dist:[0,0,0,0],s_hsr:[0,0,0,0]},
+  {n:'Franco Saavedra',  gps:0, dist:0,hsr:0,b5:0,b6:0,acc3:0,dec3:0,spmax:0,s_dist:[0,0,0,0],s_hsr:[0,0,0,0]},
+  {n:'German Guiffrey',  gps:0, dist:0,hsr:0,b5:0,b6:0,acc3:0,dec3:0,spmax:0,s_dist:[0,0,0,0],s_hsr:[0,0,0,0]},
+  {n:'Julian Moya',      gps:0, dist:0,hsr:0,b5:0,b6:0,acc3:0,dec3:0,spmax:0,s_dist:[0,0,0,0],s_hsr:[0,0,0,0]},
+  {n:'Tomas O\'Connor',  gps:0, dist:0,hsr:0,b5:0,b6:0,acc3:0,dec3:0,spmax:0,s_dist:[0,0,0,0],s_hsr:[0,0,0,0]},
+];
+
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  ['eq','jug','vel'].forEach((x,i)=>{if(x===id)document.querySelectorAll('.tab')[i].classList.add('active')});
+}
+
+/* EQUIPO CHARTS */
+const TICK={color:'#B8B8B3',font:{size:10}};
+const GRID={color:'#EDEDEB'};
+const BASE={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{x:{ticks:TICK,grid:GRID},y:{ticks:TICK,grid:GRID}}};
+
+new Chart(document.getElementById('ch-dist'),{type:'bar',data:{labels:SESS,datasets:[{
+  data:DIST_AVG,backgroundColor:'rgba(196,36,48,0.15)',borderColor:'#C42430',borderWidth:2,borderRadius:5
+}]},options:BASE});
+
+new Chart(document.getElementById('ch-hsr'),{type:'bar',data:{labels:SESS,datasets:[{
+  data:HSR_AVG,backgroundColor:'rgba(196,36,48,0.15)',borderColor:'#C42430',borderWidth:2,borderRadius:5
+}]},options:BASE});
+
+/* Sprint max chart — top 12 active players */
+const activeSorted=[...players].filter(p=>p.gps>0).sort((a,b)=>b.spmax-a.spmax).slice(0,12);
+new Chart(document.getElementById('ch-spmax'),{type:'bar',data:{
+  labels:activeSorted.map(p=>p.n.split(' ').slice(-1)[0]),
+  datasets:[{data:activeSorted.map(p=>p.spmax),backgroundColor:'rgba(196,36,48,0.15)',borderColor:'#C42430',borderWidth:2,borderRadius:5}]
+},options:{...BASE,scales:{x:{ticks:{...TICK,maxRotation:35,minRotation:35},grid:GRID},y:{ticks:TICK,grid:GRID,min:20}}}});
+
+/* JUGADORES */
+let hlKey='dist';
+const unitMap={dist:'m',hsr:'m',b5:'m',b6:'m',acc3:'',dec3:''};
+const lblMap={dist:'Dist. total',hsr:'HSR >19',b5:'B5 19-24',b6:'B6 >24',acc3:'Acc >3',dec3:'Dec >3'};
+
+function fmtVal(key,v){
+  if(key==='spmax') return v.toFixed(2).replace('.',',');
+  return Math.round(v).toLocaleString('de');
+}
+function fmtDelta(key,abs){
+  if(['dist','hsr','b5','b6'].includes(key)) return Math.round(abs).toLocaleString('de');
+  return Math.round(abs);
+}
+function unit(key){ return unitMap[key]||''; }
+
+function renderCards(){
+  const c=document.getElementById('cards-container');
+  c.innerHTML='';
+  const active=players.filter(p=>p.gps>0);
+  const sorted=[...players].sort((a,b)=>{
+    if(a.gps===0&&b.gps>0)return 1;
+    if(b.gps===0&&a.gps>0)return -1;
+    return b[hlKey]-a[hlKey];
+  });
+  const maxVal=Math.max(...active.map(p=>p[hlKey]));
+  const avgVal=active.reduce((s,p)=>s+(p[hlKey]||0),0)/active.length;
+  const avgPct=maxVal>0?Math.round((avgVal/maxVal)*100):0;
+
+  // Promedio Grupal card
+  const pg=document.createElement('div');
+  pg.className='player-card prom-card';
+  pg.innerHTML=`
+    <div class="prom-label">Promedio Grupal</div>
+    <div class="pc-main">
+      <div class="pc-val prom-val">${fmtVal(hlKey,avgVal)}<span style="font-size:11px;font-weight:600;margin-left:3px">${unit(hlKey)}</span></div>
+      <div class="pc-bar-wrap"><div class="pc-bar prom-bar" style="width:${avgPct}%"></div></div>
+    </div>
+    <div class="pc-sub">${lblMap[hlKey]} · ${active.length} jugadores activos</div>`;
+  c.appendChild(pg);
+
+  sorted.forEach(p=>{
+    const absent=p.gps===0;
+    const val=p[hlKey];
+    const pct=maxVal>0?Math.round((val/maxVal)*100):0;
+    const delta=val-avgVal;
+    const up=delta>=0;
+    const card=document.createElement('div');
+    card.className='player-card'+(absent?' sin-gps':'');
+    const deltaEl=absent?'':
+      `<div class="delta ${up?'delta-up':'delta-down'}">${up?'▲':'▼'} ${fmtDelta(hlKey,Math.abs(delta))}${unit(hlKey)?' '+unit(hlKey):''} ${up?'sobre':'bajo'} el prom.</div>`;
+    card.innerHTML=`
+      <div class="pc-header">
+        <span class="pc-name">${p.n}</span>
+        <div class="pc-badges">
+          ${p.gps===0?'<span class="badge badge-gps">Sin GPS</span>':
+            p.gps===2?'<span class="badge badge-parcial">GPS Parcial</span>':''}
+        </div>
+      </div>
+      <div class="pc-main">
+        <div class="pc-val">${fmtVal(hlKey,val)}<span style="font-size:11px;font-weight:600;margin-left:3px">${unit(hlKey)}</span></div>
+        <div class="pc-bar-wrap"><div class="pc-bar" style="width:${pct}%"></div></div>
+      </div>
+      <div class="pc-sub">${lblMap[hlKey]}</div>
+      ${deltaEl}`;
+    c.appendChild(card);
+  });
+}
+
+function sortCards(key,btn){
+  hlKey=key;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+renderCards();
+
+/* VELOCIDADES */
+(function(){
+  const c=document.getElementById('vel-container');
+  const sorted=[...players].filter(p=>p.gps>0).sort((a,b)=>b.spmax-a.spmax);
+  const maxSpd=sorted[0].spmax;
+  sorted.forEach(p=>{
+    const pct=Math.round((p.spmax/maxSpd)*100);
+    const card=document.createElement('div');
+    card.className='vel-card'+(p.gps===0?' sin-gps':'');
+    card.innerHTML=`
+      <div class="vel-header">
+        <span class="vel-name">${p.n}${p.gps===2?' <span class="badge badge-parcial" style="font-size:9px">GPS Parcial</span>':''}</span>
+        <span class="vel-spd">${p.spmax.toFixed(2).replace('.',',')} km/h</span>
+      </div>
+      <div class="vel-bar-wrap"><div class="vel-bar" style="width:${pct}%"></div></div>
+      <div class="vel-sub">Dist: ${p.dist.toLocaleString('de')} m · HSR: ${p.hsr.toLocaleString('de')} m · Acc3: ${p.acc3} · Dec3: ${p.dec3}</div>`;
+    c.appendChild(card);
+  });
+  /* Sin GPS al final */
+  players.filter(p=>p.gps===0).forEach(p=>{
+    const card=document.createElement('div');
+    card.className='vel-card sin-gps';
+    card.innerHTML=`
+      <div class="vel-header">
+        <span class="vel-name">${p.n}</span>
+        <span class="badge badge-gps">Sin GPS</span>
+      </div>
+      <div class="vel-bar-wrap"><div class="vel-bar" style="width:0%"></div></div>
+      <div class="vel-sub">Sin datos esta semana</div>`;
+    c.appendChild(card);
+  });
+})();
+</script>
+</body>
+</html>
