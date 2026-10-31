@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Carga GPS Fecha 15 vs LANÚS</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F0EE;color:#252523;max-width:480px;margin:0 auto;min-height:100vh}
+  .header{background:#252523;padding:13px 16px;display:flex;align-items:center;gap:11px}
+  .logo-wrap{width:40px;height:40px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:2px}
+  .logo-wrap svg{width:34px;height:34px}
+  .header-text h1{font-size:15px;font-weight:700;color:#fff}
+  .header-text p{font-size:11px;color:#9A9A95;margin-top:2px}
+  .tabs{display:flex;background:#1a1a19;border-bottom:1px solid #3D3D3A;position:sticky;top:0;z-index:10}
+  .tab{flex:1;padding:9px 4px;text-align:center;font-size:12px;font-weight:600;color:#6C6C68;cursor:pointer;border-bottom:3px solid transparent;transition:all .18s}
+  .tab.active{color:#C42430;border-bottom-color:#C42430}
+  .panel{display:none;padding:12px}
+  .panel.active{display:block}
+  .alert-box{background:#FFF8E6;border-left:4px solid #E8A020;border-radius:8px;padding:11px 13px;margin-bottom:12px}
+  .alert-box .at{font-size:12px;font-weight:700;color:#B87200;margin-bottom:5px}
+  .alert-box .ar{font-size:11px;color:#3D3D3A;line-height:1.85}
+  .alert-box .ar b{font-weight:700}
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .kpi{background:#fff;border-radius:10px;padding:12px 13px;border:1px solid #E9E9E6}
+  .kpi-val{font-size:22px;font-weight:800;color:#252523;line-height:1}
+  .kpi-lbl{font-size:10px;color:#9A9A95;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+  .kpi-sub{font-size:10px;color:#C42430;font-weight:600;margin-top:2px}
+  .slabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#9A9A95;margin:14px 0 8px}
+  .slabel:first-child{margin-top:0}
+  .chart-card{background:#fff;border-radius:10px;padding:13px;margin-bottom:10px;border:1px solid #E9E9E6}
+  .chart-card h3{font-size:11px;font-weight:700;color:#9A9A95;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .chart-wrap{position:relative;height:160px}
+  .sort-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+  .sort-btn{padding:5px 11px;font-size:11px;border-radius:16px;border:none;background:#DEDEDA;color:#3D3D3A;cursor:pointer;font-weight:600;transition:all .18s}
+  .sort-btn.active{background:#C42430;color:#fff}
+  .prom-card{background:#FFF8E6;border:1px solid #E8A020;border-left:3px solid #E8A020;border-radius:10px;padding:11px 13px;margin-bottom:8px}
+  .prom-label{color:#B87200;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .player-card{background:#fff;border-radius:10px;padding:11px 13px;margin-bottom:7px;border:1px solid #E9E9E6;transition:opacity .18s}
+  .player-card.sin-gps{opacity:.45}
+  .pc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .pc-name{font-size:13px;font-weight:700;color:#252523}
+  .pc-badges{display:flex;gap:5px;align-items:center}
+  .badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px}
+  .badge-gps{background:#F5F5F3;color:#9A9A95;border:1px solid #DEDEDA}
+  .badge-parcial{background:#FFF3E0;color:#E8A020;border:1px solid #FFD080}
+  .pc-main{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .pc-val{font-size:20px;font-weight:800;color:#252523;min-width:70px}
+  .pc-bar-wrap{flex:1;height:7px;background:#EDEDEB;border-radius:3.5px;overflow:hidden}
+  .pc-bar{height:100%;background:#C42430;border-radius:3.5px;transition:width .3s}
+  .prom-val{color:#B87200!important}
+  .prom-bar{background:#E8A020!important}
+  .pc-sub{font-size:10px;color:#B8B8B3}
+  .delta{font-size:10px;margin-top:5px;font-weight:600;letter-spacing:.1px}
+  .delta-up{color:#2E7D32}.delta-down{color:#C42430}
+  .pill-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+  .pill{padding:5px 10px;font-size:11px;border-radius:16px;border:none;background:#DEDEDA;color:#3D3D3A;cursor:pointer;font-weight:600;transition:all .18s;white-space:nowrap}
+  .pill.active{background:#C42430;color:#fff}
+  .pill.md{background:#252523;color:#9A9A95}
+  .pill.md.active{background:#3D3D3A;color:#fff}
+  .sess-card{background:#fff;border-radius:10px;padding:11px 13px;margin-bottom:7px;border:1px solid #E9E9E6}
+  .sess-player-label{font-size:11px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .absent-tag{font-size:10px;color:#9A9A95;font-weight:400}
+  .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .metric-item{text-align:center}
+  .metric-item .mv{font-size:15px;font-weight:800;color:#252523;line-height:1}
+  .metric-item .ml{font-size:9px;color:#B8B8B3;margin-top:2px}
+  .vel-card{background:#fff;border-radius:10px;padding:11px 13px;margin-bottom:7px;border:1px solid #E9E9E6}
+  .vel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .vel-name{font-size:13px;font-weight:700;color:#252523}
+  .vel-spd{font-size:18px;font-weight:800;color:#C42430}
+  .vel-bar-wrap{height:6px;background:#EDEDEB;border-radius:3px;overflow:hidden;margin-bottom:5px}
+  .vel-bar{height:100%;background:#C42430;border-radius:3px}
+  .vel-sub{font-size:10px;color:#B8B8B3}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo-wrap">
+    <svg viewBox="0 0 100 118" xmlns="http://www.w3.org/2000/svg">
+      <defs><clipPath id="bc"><path d="M4,28 L96,28 L96,76 Q96,102 50,116 Q4,102 4,76 Z"/></clipPath></defs>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="#111"/>
+      <rect x="4" y="4" width="92" height="24" fill="#fff" stroke="#111" stroke-width="1.5"/>
+      <text x="50" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-size="10" font-weight="900" fill="#111" letter-spacing=".3">G Y E 1908</text>
+      <g clip-path="url(#bc)">
+        <rect x="16" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="43" y="28" width="14" height="92" fill="#fff"/>
+        <rect x="70" y="28" width="14" height="92" fill="#fff"/>
+      </g>
+      <path d="M4,4 L96,4 L96,76 Q96,102 50,116 Q4,102 4,76 Z" fill="none" stroke="#111" stroke-width="3"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Carga GPS – Fecha 15 vs LANÚS</h1>
+    <p>Clausura Fecha 15 | Lun 26/10 – Dom 1/11</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showPanel('eq')">Equipo</div>
+  <div class="tab" onclick="showPanel('jug')">Jugadores</div>
+  <div class="tab" onclick="showPanel('vel')">Velocidades</div>
+</div>
+
+<!-- EQUIPO -->
+<div id="panel-eq" class="panel active">
+  <div class="alert-box">
+    <div class="at">⚠ Datos GPS incompletos</div>
+    <div class="ar">
+      <b>Sin GPS:</b> Martini, Saavedra, Moya<br>
+      <b>GPS Parcial:</b> Módica (falta Lun+Mar) · Muñoz (solo Jue+Sáb) · Mondino (falta Vie) · J.Franco (falta Sáb) · O'Connor (falta Lun) · Guiffrey (falta Mié)<br>
+      <b>Dom 1/11 = MD vs LANÚS</b> — sin datos de entrenamiento
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-val">19.030</div><div class="kpi-lbl">Dist. promedio (m)</div></div>
+    <div class="kpi"><div class="kpi-val">847</div><div class="kpi-lbl">HSR promedio (m)</div></div>
+    <div class="kpi"><div class="kpi-val">33,46</div><div class="kpi-lbl">Sprint máx (km/h)</div><div class="kpi-sub">Patritti</div></div>
+    <div class="kpi"><div class="kpi-val">69</div><div class="kpi-lbl">Acc >3 promedio</div></div>
+  </div>
+  <p class="slabel">Distancia por sesión (promedio grupal)</p>
+  <div class="chart-card"><h3>Distancia Total (m)</h3><div class="chart-wrap"><canvas id="ch-dist"></canvas></div></div>
+  <p class="slabel">Alta intensidad</p>
+  <div class="chart-card"><h3>HSR >19 km/h (m)</h3><div class="chart-wrap"><canvas id="ch-hsr"></canvas></div></div>
+  <p class="slabel">Sprint máximo por jugador</p>
+  <div class="chart-card"><h3>Velocidad máxima (km/h)</h3><div class="chart-wrap"><canvas id="ch-spmax"></canvas></div></div>
+</div>
+
+<!-- JUGADORES -->
+<div id="panel-jug" class="panel">
+  <div class="sort-bar">
+    <button class="sort-btn active" onclick="sortCards('dist',this)">Distancia</button>
+    <button class="sort-btn" onclick="sortCards('hsr',this)">HSR</button>
+    <button class="sort-btn" onclick="sortCards('b5',this)">B5</button>
+    <button class="sort-btn" onclick="sortCards('b6',this)">B6</button>
+    <button class="sort-btn" onclick="sortCards('acc3',this)">Acc3</button>
+    <button class="sort-btn" onclick="sortCards('dec3',this)">Dec3</button>
+  </div>
+  <div id="cards-container"></div>
+</div>
+
+<!-- VELOCIDADES -->
+<div id="panel-vel" class="panel">
+  <div class="pill-bar">
+    <button class="pill active" onclick="filterVel('all',this)">Semana</button>
+    <button class="pill" onclick="filterVel(0,this)">Lun</button>
+    <button class="pill" onclick="filterVel(1,this)">Mar</button>
+    <button class="pill" onclick="filterVel(2,this)">Mié</button>
+    <button class="pill" onclick="filterVel(3,this)">Jue</button>
+    <button class="pill" onclick="filterVel(4,this)">Vie</button>
+    <button class="pill" onclick="filterVel(5,this)">Sáb</button>
+  </div>
+  <div id="vel-container"></div>
+</div>
+
+<script>
+const SESS=['Lun 26/10','Mar 27/10','Mié 28/10','Jue 29/10','Vie 30/10','Sáb 31/10','Dom 1/11 (MD)'];
+const DIST_AVG=[2695,3927,4647,4239,1508,3117,0];
+const HSR_AVG=[8,187,182,298,38,161,0];
+
+const players=[
+  {n:'Agustin Módica',   gps:2,dist:12031,hsr:463, b5:405, b6:58, acc3:50,dec3:39,spmax:29.67,
+   s_dist:[0,0,2554,4427,1728,3323,0],s_hsr:[0,0,102,207,1,153,0],s_spmax:[0,0,22.21,29.67,19.17,25.83,0]},
+  {n:'Blas Armoa',       gps:1,dist:20705,hsr:1198,b5:877, b6:321,acc3:85,dec3:75,spmax:32.69,
+   s_dist:[2634,4542,4976,4469,1362,2722,0],s_hsr:[10,471,195,444,0,77,0],s_spmax:[20.64,30.36,27.47,32.69,18.92,23.52,0]},
+  {n:'Brian Andrada',    gps:1,dist:18607,hsr:1177,b5:837, b6:340,acc3:85,dec3:75,spmax:30.26,
+   s_dist:[2595,3492,4683,3908,1018,2910,0],s_hsr:[5,469,221,235,0,247,0],s_spmax:[20.52,30.26,25.82,26.74,12.41,29.79,0]},
+  {n:'Diego Mondino',    gps:2,dist:18025,hsr:277, b5:256, b6:21, acc3:39,dec3:46,spmax:25.87,
+   s_dist:[2587,2863,4872,4259,0,3444,0],s_hsr:[5,3,56,79,0,135,0],s_spmax:[20.60,20.45,23.46,25.16,0,25.87,0]},
+  {n:'Esteban Fernandez',gps:1,dist:18962,hsr:650, b5:530, b6:120,acc3:52,dec3:64,spmax:27.21,
+   s_dist:[2354,2525,4894,4602,1113,3473,0],s_hsr:[0,5,137,279,0,230,0],s_spmax:[18.55,20.16,25.71,27.05,11.99,27.21,0]},
+  {n:'Ezequiel Muñoz',   gps:2,dist:5937, hsr:248, b5:248, b6:0,  acc3:2, dec3:0, spmax:20.80,
+   s_dist:[0,0,0,2724,0,3213,0],s_hsr:[0,0,0,131,0,118,0],s_spmax:[0,0,0,20.63,0,20.80,0]},
+  {n:'Facundo Lencioni', gps:1,dist:18750,hsr:765, b5:642, b6:123,acc3:65,dec3:66,spmax:28.91,
+   s_dist:[2528,2407,4958,4473,1128,3255,0],s_hsr:[15,4,221,296,0,229,0],s_spmax:[20.77,20.39,27.99,26.69,15.85,28.91,0]},
+  {n:'Fermin Antonini',  gps:1,dist:21918,hsr:512, b5:399, b6:60, acc3:61,dec3:67,spmax:28.96,
+   s_dist:[3028,4696,4940,4752,1392,3110,0],s_hsr:[0,186,104,140,0,83,0],s_spmax:[19.79,28.17,24.96,27.54,16.02,28.96,0]},
+  {n:'German Guiffrey',  gps:2,dist:13043,hsr:1735,b5:1569,b6:166,acc3:43,dec3:0, spmax:28.64,
+   s_dist:[2004,2796,0,3390,2481,2372,0],s_hsr:[0,0,0,649,528,558,0],s_spmax:[13.84,18.48,0,21.46,21.74,28.64,0]},
+  {n:'Geronimo Patritti',gps:1,dist:21819,hsr:889, b5:753, b6:136,acc3:101,dec3:78,spmax:33.46,
+   s_dist:[2926,4858,5027,4559,1366,3083,0],s_hsr:[35,179,178,355,0,142,0],s_spmax:[24.94,33.46,25.62,30.07,14.19,25.96,0]},
+  {n:'Ignacio Sabatini', gps:1,dist:18451,hsr:806, b5:662, b6:144,acc3:115,dec3:81,spmax:31.72,
+   s_dist:[2664,2695,4450,4232,1052,3358,0],s_hsr:[6,30,247,262,0,261,0],s_spmax:[20.06,22.89,26.19,31.72,16.36,31.17,0]},
+  {n:'Imanol Gonzalez',  gps:1,dist:18049,hsr:943, b5:790, b6:152,acc3:81,dec3:105,spmax:29.77,
+   s_dist:[3074,2597,4737,2046,2755,2841,0],s_hsr:[0,0,564,315,24,41,0],s_spmax:[18.82,17.48,26.96,29.77,21.94,23.41,0]},
+  {n:'Ismael Cortez',    gps:1,dist:20756,hsr:958, b5:605, b6:163,acc3:78,dec3:99,spmax:30.22,
+   s_dist:[2496,4732,4916,4401,1108,3103,0],s_hsr:[21,301,166,405,0,65,0],s_spmax:[26.24,29.59,26.91,30.22,12.23,26.59,0]},
+  {n:'Juan Franco',      gps:2,dist:17888,hsr:1189,b5:952, b6:237,acc3:57,dec3:78,spmax:29.03,
+   s_dist:[2705,4668,4675,4378,1461,0,0],s_hsr:[3,503,156,527,0,0,0],s_spmax:[20.07,29.03,25.95,28.37,15.50,0,0]},
+  {n:'Julian Ceballos',  gps:1,dist:20817,hsr:1186,b5:980, b6:206,acc3:83,dec3:77,spmax:30.06,
+   s_dist:[2592,5275,4741,4473,953,2783,0],s_hsr:[15,278,222,451,0,221,0],s_spmax:[21.91,24.71,24.93,29.37,15.41,30.06,0]},
+  {n:'Lautaro Carrera',  gps:1,dist:19621,hsr:492, b5:426, b6:66, acc3:71,dec3:75,spmax:29.81,
+   s_dist:[2753,3041,5006,4311,1390,3119,0],s_hsr:[2,49,149,218,1,73,0],s_spmax:[19.36,22.52,24.38,29.81,15.82,25.30,0]},
+  {n:'Luciano Cingolani',gps:1,dist:17282,hsr:745, b5:625, b6:120,acc3:97,dec3:87,spmax:31.60,
+   s_dist:[2730,2551,4684,3563,1075,2680,0],s_hsr:[12,78,211,342,8,94,0],s_spmax:[19.59,25.74,26.08,31.60,20.44,25.23,0]},
+  {n:'Luciano Paredes',  gps:1,dist:20650,hsr:1116,b5:858, b6:258,acc3:121,dec3:102,spmax:32.92,
+   s_dist:[2812,2997,4975,4665,1434,3768,0],s_hsr:[9,147,175,408,0,376,0],s_spmax:[20.26,25.61,24.95,28.12,13.12,32.92,0]},
+  {n:'Martin Ubeda',     gps:1,dist:22170,hsr:701, b5:506, b6:117,acc3:58,dec3:83,spmax:30.85,
+   s_dist:[2753,5440,5182,4373,1140,3283,0],s_hsr:[0,230,122,203,0,146,0],s_spmax:[19.75,30.85,26.28,25.64,11.22,28.69,0]},
+  {n:'Matias Recalde',   gps:1,dist:21450,hsr:916, b5:602, b6:161,acc3:93,dec3:91,spmax:30.12,
+   s_dist:[2979,3145,5080,4874,1732,3641,0],s_hsr:[0,66,112,398,0,340,0],s_spmax:[19.92,26.59,25.34,28.27,18.83,30.12,0]},
+  {n:'Matias Vargas',    gps:1,dist:20923,hsr:631, b5:536, b6:96, acc3:56,dec3:43,spmax:28.26,
+   s_dist:[2697,4964,4480,4568,1460,2754,0],s_hsr:[6,154,171,272,0,28,0],s_spmax:[22.28,28.26,26.22,28.18,16.19,22.48,0]},
+  {n:'Nahuel Barboza',   gps:1,dist:20909,hsr:363, b5:301, b6:46, acc3:58,dec3:61,spmax:30.33,
+   s_dist:[2601,3253,4747,4840,1871,3598,0],s_hsr:[0,13,117,166,0,67,0],s_spmax:[17.51,23.21,25.68,30.33,15.21,25.68,0]},
+  {n:'Nicolas Romano',   gps:1,dist:22157,hsr:806, b5:643, b6:93, acc3:81,dec3:78,spmax:29.24,
+   s_dist:[2671,5246,5316,4663,1308,2953,0],s_hsr:[2,214,128,345,0,116,0],s_spmax:[20.90,26.04,26.82,29.24,17.82,24.63,0]},
+  {n:'Santiago Rodriguez',gps:1,dist:21236,hsr:853,b5:686, b6:167,acc3:62,dec3:74,spmax:29.67,
+   s_dist:[2902,4628,4570,4290,1594,3253,0],s_hsr:[17,247,181,289,0,118,0],s_spmax:[22.09,27.24,27.06,29.67,13.69,27.39,0]},
+  {n:'Tomas Ortiz',      gps:1,dist:21831,hsr:683, b5:593, b6:90, acc3:61,dec3:48,spmax:30.45,
+   s_dist:[2849,5126,4783,4871,1147,3055,0],s_hsr:[0,183,138,303,0,60,0],s_spmax:[18.89,26.40,25.08,30.45,15.86,22.35,0]},
+  {n:'Tomas O\'Connor',  gps:2,dist:15841,hsr:1393,b5:1393,b6:0,  acc3:37,dec3:22,spmax:21.74,
+   s_dist:[0,3216,2368,3489,3360,3409,0],s_hsr:[0,588,329,19,411,46,0],s_spmax:[0,20.88,21.59,19.71,21.74,20.94,0]},
+  {n:'Ulises Sanchez',   gps:1,dist:20167,hsr:855, b5:785, b6:70, acc3:54,dec3:62,spmax:28.97,
+   s_dist:[2429,5125,4568,4562,948,2534,0],s_hsr:[10,274,154,260,0,158,0],s_spmax:[20.19,25.92,26.86,28.97,12.18,24.21,0]},
+  {n:'Valentino Simoni', gps:1,dist:22852,hsr:1163,b5:893, b6:270,acc3:74,dec3:81,spmax:30.72,
+   s_dist:[3011,5237,4964,4526,1835,3278,0],s_hsr:[20,497,141,344,1,160,0],s_spmax:[21.32,30.72,24.05,27.68,19.21,28.96,0]},
+  /* Sin GPS */
+  {n:'David Martini',    gps:0,dist:0,hsr:0,b5:0,b6:0,acc3:0,dec3:0,spmax:0,s_dist:[0,0,0,0,0,0,0],s_hsr:[0,0,0,0,0,0,0],s_spmax:[0,0,0,0,0,0,0]},
+  {n:'Franco Saavedra',  gps:0,dist:0,hsr:0,b5:0,b6:0,acc3:0,dec3:0,spmax:0,s_dist:[0,0,0,0,0,0,0],s_hsr:[0,0,0,0,0,0,0],s_spmax:[0,0,0,0,0,0,0]},
+  {n:'Julian Moya',      gps:0,dist:0,hsr:0,b5:0,b6:0,acc3:0,dec3:0,spmax:0,s_dist:[0,0,0,0,0,0,0],s_hsr:[0,0,0,0,0,0,0],s_spmax:[0,0,0,0,0,0,0]},
+];
+
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  ['eq','jug','vel'].forEach((x,i)=>{if(x===id)document.querySelectorAll('.tab')[i].classList.add('active')});
+}
+
+/* EQUIPO CHARTS */
+const TICK={color:'#B8B8B3',font:{size:10}};
+const GRID={color:'#EDEDEB'};
+const BASE={responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{x:{ticks:{...TICK,maxRotation:35,minRotation:35},grid:GRID},y:{ticks:TICK,grid:GRID}}};
+
+const sessLabels=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom(MD)'];
+new Chart(document.getElementById('ch-dist'),{type:'bar',data:{labels:sessLabels,datasets:[{
+  data:DIST_AVG,backgroundColor:['rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(100,100,100,.1)'],
+  borderColor:['#C42430','#C42430','#C42430','#C42430','#C42430','#C42430','#9A9A95'],borderWidth:2,borderRadius:5
+}]},options:BASE});
+
+new Chart(document.getElementById('ch-hsr'),{type:'bar',data:{labels:sessLabels,datasets:[{
+  data:HSR_AVG,backgroundColor:['rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(196,36,48,.15)','rgba(100,100,100,.1)'],
+  borderColor:['#C42430','#C42430','#C42430','#C42430','#C42430','#C42430','#9A9A95'],borderWidth:2,borderRadius:5
+}]},options:BASE});
+
+const activeSorted=[...players].filter(p=>p.gps>0).sort((a,b)=>b.spmax-a.spmax).slice(0,12);
+new Chart(document.getElementById('ch-spmax'),{type:'bar',data:{
+  labels:activeSorted.map(p=>p.n.split(' ').slice(-1)[0]),
+  datasets:[{data:activeSorted.map(p=>p.spmax),backgroundColor:'rgba(196,36,48,.15)',borderColor:'#C42430',borderWidth:2,borderRadius:5}]
+},options:{...BASE,scales:{x:{ticks:{...TICK,maxRotation:40,minRotation:40},grid:GRID},y:{ticks:TICK,grid:GRID,min:20}}}});
+
+/* JUGADORES */
+let hlKey='dist';
+const unitMap={dist:'m',hsr:'m',b5:'m',b6:'m',acc3:'',dec3:''};
+const lblMap={dist:'Dist. total',hsr:'HSR >19',b5:'B5 19-24',b6:'B6 >24',acc3:'Acc >3',dec3:'Dec >3'};
+
+function fmtVal(key,v){return Math.round(v).toLocaleString('de')}
+function fmtDelta(key,abs){
+  if(['dist','hsr','b5','b6'].includes(key)) return Math.round(abs).toLocaleString('de');
+  return Math.round(abs);
+}
+function unit(key){return unitMap[key]||''}
+
+function renderCards(){
+  const c=document.getElementById('cards-container');
+  c.innerHTML='';
+  const active=players.filter(p=>p.gps>0);
+  const sorted=[...players].sort((a,b)=>{
+    if(a.gps===0&&b.gps>0)return 1;
+    if(b.gps===0&&a.gps>0)return -1;
+    return b[hlKey]-a[hlKey];
+  });
+  const maxVal=Math.max(...active.map(p=>p[hlKey]));
+  const avgVal=active.reduce((s,p)=>s+(p[hlKey]||0),0)/active.length;
+  const avgPct=maxVal>0?Math.round((avgVal/maxVal)*100):0;
+
+  const pg=document.createElement('div');
+  pg.className='player-card prom-card';
+  pg.innerHTML=`
+    <div class="prom-label">Promedio Grupal</div>
+    <div class="pc-main">
+      <div class="pc-val prom-val">${fmtVal(hlKey,avgVal)}<span style="font-size:11px;font-weight:600;margin-left:3px">${unit(hlKey)}</span></div>
+      <div class="pc-bar-wrap"><div class="pc-bar prom-bar" style="width:${avgPct}%"></div></div>
+    </div>
+    <div class="pc-sub">${lblMap[hlKey]} · ${active.length} jugadores activos</div>`;
+  c.appendChild(pg);
+
+  sorted.forEach(p=>{
+    const absent=p.gps===0;
+    const val=p[hlKey];
+    const pct=maxVal>0?Math.round((val/maxVal)*100):0;
+    const delta=val-avgVal;
+    const up=delta>=0;
+    const card=document.createElement('div');
+    card.className='player-card'+(absent?' sin-gps':'');
+    const deltaEl=absent?'':
+      `<div class="delta ${up?'delta-up':'delta-down'}">${up?'▲':'▼'} ${fmtDelta(hlKey,Math.abs(delta))}${unit(hlKey)?' '+unit(hlKey):''} ${up?'sobre':'bajo'} el prom.</div>`;
+    card.innerHTML=`
+      <div class="pc-header">
+        <span class="pc-name">${p.n}</span>
+        <div class="pc-badges">
+          ${p.gps===0?'<span class="badge badge-gps">Sin GPS</span>':
+            p.gps===2?'<span class="badge badge-parcial">GPS Parcial</span>':''}
+        </div>
+      </div>
+      <div class="pc-main">
+        <div class="pc-val">${fmtVal(hlKey,val)}<span style="font-size:11px;font-weight:600;margin-left:3px">${unit(hlKey)}</span></div>
+        <div class="pc-bar-wrap"><div class="pc-bar" style="width:${pct}%"></div></div>
+      </div>
+      <div class="pc-sub">${lblMap[hlKey]}</div>
+      ${deltaEl}`;
+    c.appendChild(card);
+  });
+}
+
+function sortCards(key,btn){
+  hlKey=key;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+renderCards();
+
+/* VELOCIDADES */
+let velMode='all';
+function filterVel(mode,btn){
+  velMode=mode;
+  document.querySelectorAll('#panel-vel .pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVel();
+}
+
+function renderVel(){
+  const c=document.getElementById('vel-container');
+  c.innerHTML='';
+  const active=[...players].filter(p=>p.gps>0);
+  let sorted;
+  if(velMode==='all'){
+    sorted=active.sort((a,b)=>b.spmax-a.spmax);
+  } else {
+    sorted=active.map(p=>({...p,_spd:p.s_spmax[velMode]})).sort((a,b)=>b._spd-a._spd);
+  }
+  const maxSpd=velMode==='all'?sorted[0].spmax:Math.max(...sorted.map(p=>p._spd));
+
+  sorted.forEach(p=>{
+    const spd=velMode==='all'?p.spmax:p.s_spmax[velMode];
+    const pct=maxSpd>0?Math.round((spd/maxSpd)*100):0;
+    const absent=velMode!=='all'&&spd===0;
+    const card=document.createElement('div');
+    card.className='vel-card'+(absent?' sin-gps':'');
+    const spdTxt=spd>0?spd.toFixed(2).replace('.',',')+'&nbsp;km/h':'Ausente';
+    const spdColor=spd>0?'#C42430':'#B8B8B3';
+    card.innerHTML=`
+      <div class="vel-header">
+        <span class="vel-name">${p.n}${p.gps===2?' <span class="badge badge-parcial" style="font-size:9px">GPS Parcial</span>':''}</span>
+        <span class="vel-spd" style="color:${spdColor};font-size:${spd>0?'18':'13'}px">${spdTxt}</span>
+      </div>
+      <div class="vel-bar-wrap"><div class="vel-bar" style="width:${pct}%"></div></div>
+      <div class="vel-sub">${velMode==='all'?`Dist: ${p.dist.toLocaleString('de')} m · HSR: ${p.hsr.toLocaleString('de')} m · Acc3: ${p.acc3} · Dec3: ${p.dec3}`:`Dist sesión: ${p.s_dist[velMode>-1?velMode:0].toLocaleString('de')} m · HSR: ${p.s_hsr[velMode>-1?velMode:0].toLocaleString('de')} m`}</div>`;
+    c.appendChild(card);
+  });
+  players.filter(p=>p.gps===0).forEach(p=>{
+    const card=document.createElement('div');
+    card.className='vel-card sin-gps';
+    card.innerHTML=`
+      <div class="vel-header">
+        <span class="vel-name">${p.n}</span>
+        <span class="badge badge-gps">Sin GPS</span>
+      </div>
+      <div class="vel-bar-wrap"><div class="vel-bar" style="width:0%"></div></div>
+      <div class="vel-sub">Sin datos esta semana</div>`;
+    c.appendChild(card);
+  });
+}
+renderVel();
+</script>
+</body>
+</html>
