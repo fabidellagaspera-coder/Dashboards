@@ -178,5 +178,10 @@
         "title": "Carga Fecha 15 vs LANUS – Arqueros",
         "file": "dashboards/arqueros_fecha15_lanus.html",
         "date": "2026-10-31"
+    },
+    {
+        "title": "Carga Fecha 16 vs CSIR – Jugadores de Campo",
+        "file": "dashboards/reporte_carga_fecha16_csir.html",
+        "date": "2026-11-06"
     }
 ]
