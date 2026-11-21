@@ -188,5 +188,10 @@
         "title": "Carga Fecha 16 vs CSIR – Arqueros",
         "file": "dashboards/arqueros_fecha16_csir.html",
         "date": "2026-11-06"
+    },
+    {
+        "title": "Carga Octavos de Final vs CARC – Jugadores de Campo",
+        "file": "dashboards/reporte_carga_octavos_carc.html",
+        "date": "2026-11-21"
     }
 ]
